@@ -5,4 +5,13 @@ api-version: '1.21'
 authors: [ Wynne ]
 website: https://github.com/Cinnaio
 folia-supported: true
-softdepend: [CraftEngine]
+dependencies:
+  server:
+    ProtocolLib:
+      load: BEFORE
+      required: true
+      join-classpath: true
+    CraftEngine:
+      load: OMIT
+      required: false
+      join-classpath: true

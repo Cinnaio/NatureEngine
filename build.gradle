@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'com.github.cinnaio'
-version = '0.0.0.3'
+version = '0.0.0.4'
 
 repositories {
     mavenCentral()
@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("net.dmulloy2:ProtocolLib:5.4.0")
 }
 
 tasks {

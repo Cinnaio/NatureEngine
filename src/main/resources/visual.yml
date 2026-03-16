@@ -1,7 +1,15 @@
 visual:
   enabled: true
+  debug: true
   radius-chunks: 4
   max-columns-per-tick: 600
+
+  # “全群系生效”：未显式映射到的 biome 会被替换到该季节默认 biome（可用 Terralith 等命名空间）
+  season-biome-default:
+    SPRING: minecraft:meadow
+    SUMMER: minecraft:sunflower_plains
+    AUTUMN: minecraft:windswept_forest
+    WINTER: minecraft:snowy_plains
 
   season-biome-map:
     SPRING:
@@ -16,4 +24,9 @@ visual:
     WINTER:
       PLAINS: SNOWY_PLAINS
       FOREST: SNOWY_TAIGA
+
+  # 新格式（可选）：支持 terralith:* 这类 biome key
+  # season-biome-key-map:
+  #   AUTUMN:
+  #     terralith:lavender_forest: minecraft:birch_forest
 

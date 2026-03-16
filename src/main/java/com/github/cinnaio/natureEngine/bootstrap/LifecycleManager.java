@@ -6,13 +6,14 @@ import com.github.cinnaio.natureEngine.core.agriculture.crop.CropRegistry;
 import com.github.cinnaio.natureEngine.core.agriculture.crop.listener.VanillaCropListener;
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthCalculator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
-import com.github.cinnaio.natureEngine.core.agriculture.season.visual.SeasonVisualizer;
+import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherController;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentManager;
 import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.scheduler.GlobalScheduler;
 import com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineHook;
+import com.github.cinnaio.natureEngine.integration.protocollib.ProtocolLibHook;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,7 +35,8 @@ public final class LifecycleManager {
     private EnvironmentManager environmentManager;
     private CropManager cropManager;
     private CraftEngineHook craftEngineHook;
-    private SeasonVisualizer seasonVisualizer;
+    private PacketSeasonVisualizer packetSeasonVisualizer;
+    private ProtocolLibHook protocolLibHook;
 
     public LifecycleManager(JavaPlugin plugin, ServiceLocator serviceLocator) {
         this.plugin = plugin;
@@ -54,6 +56,8 @@ public final class LifecycleManager {
 
         // 核心农业环境相关服务
         this.seasonManager = new SeasonManager(configManager.getSeasonConfig());
+        // 强制依赖 ProtocolLib（发包视觉层）
+        this.protocolLibHook = new ProtocolLibHook(plugin);
         WeatherController weatherController = new WeatherController(configManager.getWeatherConfig());
         this.weatherManager = new WeatherManager(plugin, globalScheduler, seasonManager, configManager.getWeatherConfig(), weatherController);
         this.weatherManager.start();
@@ -63,14 +67,15 @@ public final class LifecycleManager {
         GrowthCalculator growthCalculator = new GrowthCalculator(configManager.getGrowthConfig(), configManager.getWeatherConfig());
         this.cropManager = new CropManager(cropRegistry, growthCalculator);
         this.craftEngineHook = new CraftEngineHook(plugin);
-        this.seasonVisualizer = new SeasonVisualizer(plugin, configManager.getVisualConfig());
+        this.packetSeasonVisualizer = new PacketSeasonVisualizer(plugin, seasonManager, configManager.getVisualConfig());
 
         serviceLocator.register(SeasonManager.class, seasonManager);
         serviceLocator.register(WeatherManager.class, weatherManager);
         serviceLocator.register(EnvironmentManager.class, environmentManager);
         serviceLocator.register(CropManager.class, cropManager);
         serviceLocator.register(CraftEngineHook.class, craftEngineHook);
-        serviceLocator.register(SeasonVisualizer.class, seasonVisualizer);
+        serviceLocator.register(PacketSeasonVisualizer.class, packetSeasonVisualizer);
+        serviceLocator.register(ProtocolLibHook.class, protocolLibHook);
 
         // 注册原版作物监听
         Bukkit.getPluginManager().registerEvents(new VanillaCropListener(), plugin);
@@ -80,8 +85,8 @@ public final class LifecycleManager {
 
         // TODO: 在后续阶段补充 SeasonManager、WeatherManager、EnvironmentManager 等核心服务注册
 
-        // 视觉系统 tick（渐进式 biome 变色）
-        globalScheduler.runTaskTimer(seasonVisualizer::tick, 20L, 1L);
+        // 发包视觉刷新 tick（20 chunk/秒：每 tick 约 1 chunk）
+        globalScheduler.runTaskTimer(packetSeasonVisualizer::tick, 20L, 1L);
     }
 
     public void onDisable() {

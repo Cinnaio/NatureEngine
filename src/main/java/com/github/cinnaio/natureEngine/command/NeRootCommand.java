@@ -5,7 +5,7 @@ import com.github.cinnaio.natureEngine.api.SeasonAPI;
 import com.github.cinnaio.natureEngine.api.WeatherAPI;
 import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
-import com.github.cinnaio.natureEngine.core.agriculture.season.visual.SeasonVisualizer;
+import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -53,7 +53,7 @@ public final class NeRootCommand extends Command {
         sender.sendMessage("§e/ne season set <spring|summer|autumn|winter> §7- 设置当前世界季节");
         sender.sendMessage("§e/ne season clear §7- 清除手动季节覆盖");
         sender.sendMessage("§e/ne season apply §7- 重新应用当前季节的视觉效果（biome tint）");
-        sender.sendMessage("§e/ne season restore §7- 恢复玩家周围区域的原始 biome");
+        sender.sendMessage("§e/ne season restore §7- （预留）");
     }
 
     private boolean handleDebug(CommandSender sender) {
@@ -148,9 +148,9 @@ public final class NeRootCommand extends Command {
         }
         SeasonAPI.setSeasonOverride(world, next);
         player.sendMessage("§a已将当前世界季节设置为: " + next + "（手动覆盖）");
-        SeasonVisualizer visualizer = SERVICES.get(SeasonVisualizer.class);
+        PacketSeasonVisualizer visualizer = SERVICES.get(PacketSeasonVisualizer.class);
         if (visualizer != null) {
-            visualizer.enqueueApplyAround(player, next);
+            visualizer.enqueueApply(player);
         }
         return true;
     }
@@ -182,9 +182,9 @@ public final class NeRootCommand extends Command {
         }
         SeasonAPI.setSeasonOverride(world, target);
         player.sendMessage("§a已将当前世界季节设置为: " + target + "（手动覆盖）");
-        SeasonVisualizer visualizer = SERVICES.get(SeasonVisualizer.class);
+        PacketSeasonVisualizer visualizer = SERVICES.get(PacketSeasonVisualizer.class);
         if (visualizer != null) {
-            visualizer.enqueueApplyAround(player, target);
+            visualizer.enqueueApply(player);
         }
         return true;
     }
@@ -192,19 +192,16 @@ public final class NeRootCommand extends Command {
     private boolean handleSeasonClear(Player player, World world) {
         SeasonAPI.clearSeasonOverride(world);
         player.sendMessage("§a已清除当前世界的季节覆盖，恢复自然季节推进。");
-        SeasonVisualizer visualizer = SERVICES.get(SeasonVisualizer.class);
-        if (visualizer != null) {
-            visualizer.enqueueRestoreAround(player);
-        }
+        player.sendMessage("§7提示：发包视觉会在区块重新发送时自然恢复。");
         return true;
     }
 
     private boolean handleSeasonApply(Player player, World world) {
         SeasonType current = SeasonAPI.getCurrentSeason(world);
-        SeasonVisualizer visualizer = SERVICES.get(SeasonVisualizer.class);
+        PacketSeasonVisualizer visualizer = SERVICES.get(PacketSeasonVisualizer.class);
         if (visualizer != null) {
-            visualizer.enqueueApplyAround(player, current);
-            player.sendMessage("§a已对你周围区域重新应用季节视觉: " + current);
+            visualizer.enqueueApply(player);
+            player.sendMessage("§a已开始刷新你周围区域的季节视觉: " + current);
         } else {
             player.sendMessage("§c视觉系统未启用或未初始化。");
         }
@@ -212,13 +209,7 @@ public final class NeRootCommand extends Command {
     }
 
     private boolean handleSeasonRestore(Player player, World world) {
-        SeasonVisualizer visualizer = SERVICES.get(SeasonVisualizer.class);
-        if (visualizer != null) {
-            visualizer.enqueueRestoreAround(player);
-            player.sendMessage("§a已开始恢复你周围区域的原始 biome（渐进式）。");
-        } else {
-            player.sendMessage("§c视觉系统未启用或未初始化。");
-        }
+        player.sendMessage("§7当前为发包视觉模式，恢复由区块重发自然完成（或重新登录）。");
         return true;
     }
 }
