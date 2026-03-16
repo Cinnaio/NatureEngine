@@ -1,0 +1,19 @@
+visual:
+  enabled: true
+  radius-chunks: 4
+  max-columns-per-tick: 600
+
+  season-biome-map:
+    SPRING:
+      PLAINS: MEADOW
+      FOREST: FLOWER_FOREST
+    SUMMER:
+      PLAINS: SUNFLOWER_PLAINS
+      FOREST: FOREST
+    AUTUMN:
+      PLAINS: WINDSWEPT_FOREST
+      FOREST: BIRCH_FOREST
+    WINTER:
+      PLAINS: SNOWY_PLAINS
+      FOREST: SNOWY_TAIGA
+

@@ -1,0 +1,16 @@
+debug:
+  enabled: true
+  default-level: INFO
+  log-to-file: false
+  modules:
+    core-season: INFO
+    core-weather: INFO
+    core-environment: INFO
+    core-growth: INFO
+    core-crop: INFO
+    integration-craftengine: INFO
+    simulation: INFO
+    config: INFO
+    command: INFO
+    debug: INFO
+

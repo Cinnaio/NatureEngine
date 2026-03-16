@@ -1,0 +1,8 @@
+name: NatureEngine
+version: '${version}'
+main: com.github.cinnaio.natureEngine.NatureEngine
+api-version: '1.21'
+authors: [ Wynne ]
+website: https://github.com/Cinnaio
+folia-supported: true
+softdepend: [CraftEngine]

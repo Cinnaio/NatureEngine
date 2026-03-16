@@ -1,0 +1,52 @@
+weather:
+  tick-interval-seconds: 90
+  duration-seconds:
+    SUNNY: 300
+    RAIN: 240
+    STORM: 180
+    SNOW: 240
+
+  season-weights:
+    spring:
+      SUNNY: 6
+      RAIN: 10
+      STORM: 2
+      SNOW: 0
+    summer:
+      SUNNY: 14
+      RAIN: 4
+      STORM: 1
+      SNOW: 0
+    autumn:
+      SUNNY: 6
+      RAIN: 8
+      STORM: 3
+      SNOW: 0
+    winter:
+      SUNNY: 5
+      RAIN: 2
+      STORM: 2
+      SNOW: 10
+
+  profiles:
+    SUNNY:
+      temperature-delta: 2.0
+      humidity-delta: -0.1
+      soil-moisture-delta: -0.05
+      growth-multiplier: 1.0
+    RAIN:
+      temperature-delta: -1.0
+      humidity-delta: 0.2
+      soil-moisture-delta: 0.25
+      growth-multiplier: 1.1
+    STORM:
+      temperature-delta: -2.0
+      humidity-delta: 0.25
+      soil-moisture-delta: 0.30
+      growth-multiplier: 0.9
+    SNOW:
+      temperature-delta: -5.0
+      humidity-delta: 0.05
+      soil-moisture-delta: 0.10
+      growth-multiplier: 0.6
+

@@ -1,0 +1,33 @@
+seasons:
+  spring:
+    length-days: 10
+    base-temperature: 15.0
+    base-humidity: 0.7
+    growth-multiplier: 1.2
+    yield-multiplier: 1.0
+    easy-to-wither: false
+
+  summer:
+    length-days: 10
+    base-temperature: 25.0
+    base-humidity: 0.5
+    growth-multiplier: 1.1
+    yield-multiplier: 1.1
+    easy-to-wither: false
+
+  autumn:
+    length-days: 10
+    base-temperature: 10.0
+    base-humidity: 0.6
+    growth-multiplier: 1.0
+    yield-multiplier: 1.2
+    easy-to-wither: false
+
+  winter:
+    length-days: 10
+    base-temperature: 0.0
+    base-humidity: 0.4
+    growth-multiplier: 0.5
+    yield-multiplier: 0.8
+    easy-to-wither: true
+

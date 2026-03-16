@@ -1,0 +1,7 @@
+growth:
+  # 推进到下一阶段所需的综合因子阈值 (0-1)
+  advance-threshold: 0.8
+
+  # 判定为枯萎所需的综合因子阈值 (0-1)
+  wither-threshold: 0.1
+
