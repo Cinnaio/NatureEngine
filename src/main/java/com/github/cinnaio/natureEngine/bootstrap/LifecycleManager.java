@@ -63,7 +63,7 @@ public final class LifecycleManager {
         GrowthCalculator growthCalculator = new GrowthCalculator(configManager.getGrowthConfig(), configManager.getWeatherConfig());
         this.cropManager = new CropManager(cropRegistry, growthCalculator);
         this.craftEngineHook = new CraftEngineHook(plugin);
-        this.seasonVisualizer = new SeasonVisualizer(configManager.getVisualConfig());
+        this.seasonVisualizer = new SeasonVisualizer(plugin, configManager.getVisualConfig());
 
         serviceLocator.register(SeasonManager.class, seasonManager);
         serviceLocator.register(WeatherManager.class, weatherManager);

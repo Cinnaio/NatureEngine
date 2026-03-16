@@ -2,7 +2,7 @@ package com.github.cinnaio.natureEngine.engine.scheduler;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitTask;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 
 /**
  * 封装对 Folia/Paper 任务系统的基础访问。
@@ -20,9 +20,11 @@ public final class GlobalScheduler {
         // 预留初始化逻辑
     }
 
-    public BukkitTask runTaskTimer(Runnable runnable, long delayTicks, long periodTicks) {
-        // 在 Folia/Paper 1.21.4 上，Bukkit.getGlobalRegionScheduler() 是推荐方式
-        return Bukkit.getScheduler().runTaskTimer(plugin, runnable, delayTicks, periodTicks);
+    /**
+     * Folia: 使用 GlobalRegionScheduler 的固定频率任务。
+     */
+    public ScheduledTask runTaskTimer(Runnable runnable, long delayTicks, long periodTicks) {
+        return Bukkit.getGlobalRegionScheduler().runAtFixedRate(plugin, task -> runnable.run(), delayTicks, periodTicks);
     }
 
     public void shutdown() {

@@ -6,10 +6,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayDeque;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -19,12 +20,14 @@ import java.util.UUID;
  */
 public final class SeasonVisualizer {
 
+    private final JavaPlugin plugin;
     private final VisualConfigView configView;
 
-    private final Map<UUID, Map<Long, Biome>> originalBiomeByWorld = new HashMap<>();
+    private final Map<UUID, Map<Long, Biome>> originalBiomeByWorld = new ConcurrentHashMap<>();
     private final Deque<BiomeUpdate> queue = new ArrayDeque<>();
 
-    public SeasonVisualizer(VisualConfigView configView) {
+    public SeasonVisualizer(JavaPlugin plugin, VisualConfigView configView) {
+        this.plugin = plugin;
         this.configView = configView;
     }
 
@@ -41,7 +44,7 @@ public final class SeasonVisualizer {
 
         for (int cx = centerChunkX - radiusChunks; cx <= centerChunkX + radiusChunks; cx++) {
             for (int cz = centerChunkZ - radiusChunks; cz <= centerChunkZ + radiusChunks; cz++) {
-                queue.add(new BiomeUpdate(world.getUID(), cx, cz, seasonType, biomeMap, BiomeUpdateMode.APPLY));
+                queue.add(new BiomeUpdate(world.getUID(), cx, cz, biomeMap, BiomeUpdateMode.APPLY));
             }
         }
     }
@@ -55,7 +58,7 @@ public final class SeasonVisualizer {
 
         for (int cx = centerChunkX - radiusChunks; cx <= centerChunkX + radiusChunks; cx++) {
             for (int cz = centerChunkZ - radiusChunks; cz <= centerChunkZ + radiusChunks; cz++) {
-                queue.add(new BiomeUpdate(world.getUID(), cx, cz, null, null, BiomeUpdateMode.RESTORE));
+                queue.add(new BiomeUpdate(world.getUID(), cx, cz, null, BiomeUpdateMode.RESTORE));
             }
         }
     }
@@ -68,63 +71,51 @@ public final class SeasonVisualizer {
             queue.clear();
             return;
         }
-        int budget = configView.getMaxColumnsPerTick();
-        while (budget > 0 && !queue.isEmpty()) {
-            BiomeUpdate update = queue.peek();
-            int used = updateStep(update, budget);
-            budget -= used;
-            if (update.isDone()) {
-                queue.poll();
-            } else {
-                break;
+        int maxColumnsPerTick = configView.getMaxColumnsPerTick();
+        int maxChunksPerTick = Math.max(1, maxColumnsPerTick / 256);
+        for (int i = 0; i < maxChunksPerTick && !queue.isEmpty(); i++) {
+            BiomeUpdate update = queue.poll();
+            if (update != null) {
+                scheduleChunkUpdate(update);
             }
         }
     }
 
-    private int updateStep(BiomeUpdate update, int budget) {
+    private void scheduleChunkUpdate(BiomeUpdate update) {
         World world = Bukkit.getWorld(update.worldId);
         if (world == null) {
-            update.done = true;
-            return 0;
+            return;
         }
+        // Folia 要求在对应区域线程修改 chunk/biome
+        // 注意：该重载需要 chunk 坐标，而不是 block 坐标
+        Bukkit.getRegionScheduler().execute(plugin, world, update.chunkX, update.chunkZ, () -> applyChunkUpdate(world, update));
+    }
 
-        int used = 0;
-        // 每个 chunk 16x16 列，逐列处理
-        while (used < budget && update.index < 256) {
-            int localX = update.index & 15;
-            int localZ = (update.index >> 4) & 15;
-            int x = (update.chunkX << 4) + localX;
-            int z = (update.chunkZ << 4) + localZ;
+    private void applyChunkUpdate(World world, BiomeUpdate update) {
+        Map<Long, Biome> store = originalBiomeByWorld.computeIfAbsent(update.worldId, k -> new ConcurrentHashMap<>());
+        for (int localX = 0; localX < 16; localX++) {
+            for (int localZ = 0; localZ < 16; localZ++) {
+                int x = (update.chunkX << 4) + localX;
+                int z = (update.chunkZ << 4) + localZ;
+                long key = packXZ(x, z);
 
-            long key = packXZ(x, z);
-            Map<Long, Biome> store = originalBiomeByWorld.computeIfAbsent(update.worldId, k -> new HashMap<>());
-
-            if (update.mode == BiomeUpdateMode.APPLY) {
-                Biome current = world.getBiome(x, world.getMinHeight(), z);
-                store.putIfAbsent(key, current);
-                Biome target = update.biomeMap != null ? update.biomeMap.getOrDefault(current, current) : current;
-                // 设置整列（从 minHeight 到 maxHeight），保证草/叶都吃到相同 biome tint
-                for (int y = world.getMinHeight(); y < world.getMaxHeight(); y += 16) {
-                    world.setBiome(x, y, z, target);
-                }
-            } else {
-                Biome original = store.get(key);
-                if (original != null) {
+                if (update.mode == BiomeUpdateMode.APPLY) {
+                    Biome current = world.getBiome(x, world.getMinHeight(), z);
+                    store.putIfAbsent(key, current);
+                    Biome target = update.biomeMap != null ? update.biomeMap.getOrDefault(current, current) : current;
                     for (int y = world.getMinHeight(); y < world.getMaxHeight(); y += 16) {
-                        world.setBiome(x, y, z, original);
+                        world.setBiome(x, y, z, target);
+                    }
+                } else {
+                    Biome original = store.get(key);
+                    if (original != null) {
+                        for (int y = world.getMinHeight(); y < world.getMaxHeight(); y += 16) {
+                            world.setBiome(x, y, z, original);
+                        }
                     }
                 }
             }
-
-            update.index++;
-            used++;
         }
-
-        if (update.index >= 256) {
-            update.done = true;
-        }
-
-        return used;
     }
 
     private long packXZ(int x, int z) {
@@ -140,24 +131,15 @@ public final class SeasonVisualizer {
         private final UUID worldId;
         private final int chunkX;
         private final int chunkZ;
-        private final SeasonType seasonType;
         private final Map<Biome, Biome> biomeMap;
         private final BiomeUpdateMode mode;
 
-        private int index = 0;
-        private boolean done = false;
-
-        private BiomeUpdate(UUID worldId, int chunkX, int chunkZ, SeasonType seasonType, Map<Biome, Biome> biomeMap, BiomeUpdateMode mode) {
+        private BiomeUpdate(UUID worldId, int chunkX, int chunkZ, Map<Biome, Biome> biomeMap, BiomeUpdateMode mode) {
             this.worldId = worldId;
             this.chunkX = chunkX;
             this.chunkZ = chunkZ;
-            this.seasonType = seasonType;
             this.biomeMap = biomeMap;
             this.mode = mode;
-        }
-
-        public boolean isDone() {
-            return done;
         }
     }
 }
