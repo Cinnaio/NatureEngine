@@ -134,7 +134,17 @@ public final class NeRootCommand extends Command {
             }
             case "reload" -> {
                 if (args.length == 2) {
-                    return filterPrefix(List.of("all", "seasons", "growth", "debug", "weather", "visual", "crops"), lower(args[1]));
+                    return filterPrefix(List.of(
+                            "all",
+                            "seasons",
+                            "growth",
+                            "debug",
+                            "weather",
+                            "visual",
+                            "crops",
+                            "biome-titles",
+                            "biome"
+                    ), lower(args[1]));
                 }
             }
             case "crop" -> {
