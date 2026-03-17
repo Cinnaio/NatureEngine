@@ -142,7 +142,6 @@ public final class NeRootCommand extends Command {
                             "weather",
                             "visual",
                             "crops",
-                            "biome-titles",
                             "biome"
                     ), lower(args[1]));
                 }

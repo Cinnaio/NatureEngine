@@ -130,7 +130,7 @@ public final class ConfigManager {
                     cropConfigView.reload();
                 }
             }
-            case "biome", "biomes", "biome-title", "biome-titles" -> {
+            case "biome", "biomes" -> {
                 reloadYaml(biomeTitlesCfg, "biome-titles.yml");
                 if (biomeTitleConfigView != null) {
                     biomeTitleConfigView.reload();
