@@ -1,16 +1,12 @@
 <h3 align="center">NatureEngine</h3>
 
-NatureEngine 是一个面向 Paper/Folia（含 Luminol 等分支）的自然系统插件，提供 **季节**、**天气** 与 **作物生长接管**（原版 + CraftEngine）。
+<p align="center">
+  <sub>
+    面向 Paper/Folia（含 Luminol 等分支）的自然系统插件：季节、天气与作物生长接管（原版 + CraftEngine）
+  </sub>
+</p>
 
----
-
-### API（给开发者）
-
-- `SeasonAPI`：`com.github.cinnaio.natureEngine.api.SeasonAPI`
-- `WeatherAPI`：`com.github.cinnaio.natureEngine.api.WeatherAPI`
-- `CropAPI`：`com.github.cinnaio.natureEngine.api.CropAPI`
-
----
+<hr />
 
 ### 构建
 
@@ -26,14 +22,22 @@ Windows:
 gradlew.bat
 ```
 
----
+<hr />
+
+### API（给开发者）
+
+- `SeasonAPI`：`com.github.cinnaio.natureEngine.api.SeasonAPI`
+- `WeatherAPI`：`com.github.cinnaio.natureEngine.api.WeatherAPI`
+- `CropAPI`：`com.github.cinnaio.natureEngine.api.CropAPI`
+
+<hr />
 
 ### 贡献与致谢
 
 欢迎 Issue / PR。  
 致谢：Paper/Folia、ProtocolLib、PlaceholderAPI、CraftEngine、Kyori Adventure/MiniMessage。
 
----
+<hr />
 
 ### License
 
