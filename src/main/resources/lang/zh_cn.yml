@@ -14,7 +14,8 @@ lang:
   command:
     ne:
       help-title: "<color:#B8C7FF>[NatureEngine] <color:#A9B3C3>可用子命令："
-      help-debug: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug <color:#A9B3C3>显示当前世界季节、天气与环境信息"
+      help-debug: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug <color:#A9B3C3>显示当前世界季节、天气、环境与作物调试"
+      help-debug-crop: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug crop <color:#A9B3C3>仅显示指向目标的作物生长调试"
       help-season-info: "<color:#A9B3C3>- <color:#FFE2A9>/ne season info <color:#A9B3C3>显示当前世界季节信息"
       help-season-next: "<color:#A9B3C3>- <color:#FFE2A9>/ne season next <color:#A9B3C3>切换到下一季节"
       help-season-set: "<color:#A9B3C3>- <color:#FFE2A9>/ne season set <spring|summer|autumn|winter> <color:#A9B3C3>设置当前世界季节"
@@ -61,6 +62,8 @@ lang:
     season-line: "<color:#A9B3C3>季节 <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
     weather-line: "<color:#A9B3C3>天气 <color:#FFE2A9>{weather}"
     env-line: "<color:#A9B3C3>环境 <color:#FFE2A9>T={temp} <color:#A9B3C3>H={humidity} <color:#A9B3C3>Soil={soil} <color:#A9B3C3>Light={light}"
+    crop-line: "<color:#A9B3C3>作物 <color:#FFE2A9>{block} <color:#A9B3C3>({crop_id}) <color:#A9B3C3>接管 <color:#FFE2A9>{crops_enabled} <color:#A9B3C3>/作物启用 <color:#FFE2A9>{crop_enabled} <color:#A9B3C3>阶段 <color:#FFE2A9>{age}<color:#A9B3C3>/{max_age} <color:#A9B3C3>配置stages <color:#FFE2A9>{stages} <color:#A9B3C3>阈值 A={advance_th} W={wither_th} <color:#A9B3C3>判定 <color:#FFE2A9>{decision} <color:#A9B3C3>总值 <color:#FFE2A9>{total} <color:#A9B3C3>因子 T={tf} H={hf} L={lf} S={sf} W={wf} <color:#A9B3C3>环境 T={env_temp} H={env_hum} Soil={env_soil} Light={env_light} <color:#A9B3C3>作物参数 OptT={opt_temp}±{temp_tol} OptH={opt_hum}±{hum_tol} MinL={min_light} Seasons={pref_seasons}"
+    crop-none: "<color:#A9B3C3>作物 <color:#FFE2A9>{block} <color:#A9B3C3>未被作物系统接管（crops.enabled={crops_enabled}，或未在 crops.yml 注册/已禁用）"
 
   visual:
     only-world: "<color:#FFB4B4>该命令仅对 world 生效。"

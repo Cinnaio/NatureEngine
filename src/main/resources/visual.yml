@@ -1,6 +1,6 @@
 visual:
   enabled: true
-  debug: true
+  debug: false
   radius-chunks: 12
   max-columns-per-tick: 600
   # 玩家走到哪视觉跟到哪：定时检测移动并刷新周围区块

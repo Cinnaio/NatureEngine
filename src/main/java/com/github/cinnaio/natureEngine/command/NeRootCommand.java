@@ -4,17 +4,22 @@ import com.github.cinnaio.natureEngine.api.EnvironmentAPI;
 import com.github.cinnaio.natureEngine.api.SeasonAPI;
 import com.github.cinnaio.natureEngine.api.WeatherAPI;
 import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
+import com.github.cinnaio.natureEngine.core.agriculture.crop.CropManager;
+import com.github.cinnaio.natureEngine.core.agriculture.crop.CropType;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonNotifier;
 import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
+import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthContext;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
 import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.text.I18n;
 import com.github.cinnaio.natureEngine.engine.text.Text;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
@@ -41,7 +46,7 @@ public final class NeRootCommand extends Command {
 
         String sub = args[0].toLowerCase(Locale.ROOT);
         if ("debug".equals(sub)) {
-            return handleDebug(sender);
+            return handleDebug(sender, Arrays.copyOfRange(args, 1, args.length));
         }
         if ("season".equals(sub)) {
             return handleSeason(sender, Arrays.copyOfRange(args, 1, args.length));
@@ -60,6 +65,7 @@ public final class NeRootCommand extends Command {
             if (i18n != null) {
                 sender.sendMessage(i18n.tr(p, "command.ne.help-title"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-debug"));
+                sender.sendMessage(i18n.tr(p, "command.ne.help-debug-crop"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-season-info"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-season-next"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-season-set"));
@@ -73,7 +79,7 @@ public final class NeRootCommand extends Command {
         sender.sendMessage(Text.parse("<color:#B8C7FF>[NatureEngine]</> <color:#A9B3C3>Commands:</>"));
     }
 
-    private boolean handleDebug(CommandSender sender) {
+    private boolean handleDebug(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
             if (sender instanceof Player p) {
                 I18n i18n = SERVICES.get(I18n.class);
@@ -87,6 +93,11 @@ public final class NeRootCommand extends Command {
         }
         Player player = (Player) sender;
         World world = player.getWorld();
+
+        // /ne debug crop：仅输出指向目标的作物生长调试
+        if (args != null && args.length > 0 && "crop".equalsIgnoreCase(args[0])) {
+            return handleDebugCrop(player);
+        }
 
         var season = SeasonAPI.getCurrentSeason(world);
         double progress = SeasonAPI.getSeasonProgress(world);
@@ -108,8 +119,95 @@ public final class NeRootCommand extends Command {
                     "soil", String.format("%.2f", env.getSoilMoisture()),
                     "light", String.valueOf(env.getLightLevel())
             )));
+
+            // /ne debug（默认）附带一行 crop 调试，行为与 /ne debug crop 相同
+            handleDebugCrop(player);
         } else {
             player.sendMessage(Text.parse("<color:#B8C7FF>[NatureEngine Debug]"));
+        }
+        return true;
+    }
+
+    private boolean handleDebugCrop(Player player) {
+        World world = player.getWorld();
+        var season = SeasonAPI.getCurrentSeason(world);
+        double progress = SeasonAPI.getSeasonProgress(world);
+        var weather = WeatherAPI.getCurrentWeather(world);
+
+        I18n i18n = SERVICES.get(I18n.class);
+        if (i18n == null) {
+            player.sendMessage(Text.parse("<color:#FFB4B4>i18n 未初始化。</>"));
+            return true;
+        }
+
+        CropManager cropManager = SERVICES.get(CropManager.class);
+        if (cropManager == null) {
+            player.sendMessage(Text.parse("<color:#FFB4B4>CropManager 未初始化。</>"));
+            return true;
+        }
+
+        Block target = player.getTargetBlockExact(6);
+        if (target == null) target = player.getLocation().getBlock();
+        Location loc = target.getLocation();
+
+        ConfigManager configManager = SERVICES.get(ConfigManager.class);
+        double advanceTh = configManager != null ? configManager.getGrowthConfig().getAdvanceThreshold() : 0.8;
+        double witherTh = configManager != null ? configManager.getGrowthConfig().getWitherThreshold() : 0.1;
+        boolean cropsEnabled = configManager != null && configManager.getCropConfig() != null && configManager.getCropConfig().isGlobalEnabled();
+
+        var cropOpt = cropManager.getCropDataForLocation(loc);
+        if (cropOpt.isPresent()) {
+            CropType crop = cropOpt.get();
+            EnvironmentContext cropEnv = EnvironmentAPI.getContext(target);
+            int age = (target.getBlockData() instanceof org.bukkit.block.data.Ageable a) ? a.getAge() : -1;
+            int maxAge = (target.getBlockData() instanceof org.bukkit.block.data.Ageable a) ? a.getMaximumAge() : -1;
+            GrowthContext ctx = new GrowthContext(
+                    loc,
+                    crop,
+                    Math.max(0, age),
+                    season,
+                    progress,
+                    weather,
+                    cropEnv
+            );
+            var info = cropManager.calculateGrowthDebug(ctx);
+
+            String decision = info.getResult().isShouldWither()
+                    ? "WITHER"
+                    : (info.getResult().getStageDelta() > 0 ? "ADVANCE" : "BLOCK");
+            java.util.Map<String, String> ph = new java.util.HashMap<>();
+            ph.put("block", target.getType().name());
+            ph.put("crop_id", crop.getId());
+            ph.put("crops_enabled", cropsEnabled ? "true" : "false");
+            ph.put("crop_enabled", crop.isEnabled() ? "true" : "false");
+            ph.put("age", String.valueOf(age));
+            ph.put("max_age", String.valueOf(maxAge));
+            ph.put("stages", String.valueOf(crop.getStages()));
+            ph.put("min_light", String.valueOf(crop.getMinLight()));
+            ph.put("opt_temp", String.format("%.1f", crop.getOptimalTemperature()));
+            ph.put("temp_tol", String.format("%.1f", crop.getTemperatureTolerance()));
+            ph.put("opt_hum", String.format("%.2f", crop.getOptimalHumidity()));
+            ph.put("hum_tol", String.format("%.2f", crop.getHumidityTolerance()));
+            ph.put("pref_seasons", crop.getPreferredSeasons().toString());
+            ph.put("env_temp", String.format("%.1f", cropEnv.getTemperature()));
+            ph.put("env_hum", String.format("%.2f", cropEnv.getHumidity()));
+            ph.put("env_soil", String.format("%.2f", cropEnv.getSoilMoisture()));
+            ph.put("env_light", String.valueOf(cropEnv.getLightLevel()));
+            ph.put("advance_th", String.format("%.2f", advanceTh));
+            ph.put("wither_th", String.format("%.2f", witherTh));
+            ph.put("decision", decision);
+            ph.put("total", String.format("%.3f", info.getTotal()));
+            ph.put("tf", String.format("%.2f", info.getTemperatureFactor()));
+            ph.put("hf", String.format("%.2f", info.getHumidityFactor()));
+            ph.put("lf", String.format("%.2f", info.getLightFactor()));
+            ph.put("sf", String.format("%.2f", info.getSeasonFactor()));
+            ph.put("wf", String.format("%.2f", info.getWeatherFactor()));
+            player.sendMessage(i18n.tr(player, "debug.crop-line", ph));
+        } else {
+            player.sendMessage(i18n.tr(player, "debug.crop-none", Map.of(
+                    "block", target.getType().name(),
+                    "crops_enabled", cropsEnabled ? "true" : "false"
+            )));
         }
         return true;
     }

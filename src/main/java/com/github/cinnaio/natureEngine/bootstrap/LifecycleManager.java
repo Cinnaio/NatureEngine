@@ -75,7 +75,7 @@ public final class LifecycleManager {
         this.weatherManager.start();
 
         this.environmentManager = new EnvironmentManager(weatherManager, configManager.getWeatherConfig());
-        CropRegistry cropRegistry = new CropRegistry();
+        CropRegistry cropRegistry = new CropRegistry(configManager.getCropConfig());
         GrowthCalculator growthCalculator = new GrowthCalculator(configManager.getGrowthConfig(), configManager.getWeatherConfig());
         this.cropManager = new CropManager(cropRegistry, growthCalculator);
         this.craftEngineHook = new CraftEngineHook(plugin);

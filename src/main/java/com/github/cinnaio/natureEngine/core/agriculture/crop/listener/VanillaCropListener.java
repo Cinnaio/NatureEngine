@@ -1,7 +1,7 @@
 package com.github.cinnaio.natureEngine.core.agriculture.crop.listener;
 
 import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
-import com.github.cinnaio.natureEngine.core.agriculture.crop.CropData;
+import com.github.cinnaio.natureEngine.core.agriculture.crop.CropType;
 import com.github.cinnaio.natureEngine.core.agriculture.crop.CropManager;
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthContext;
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthResult;
@@ -28,16 +28,16 @@ public final class VanillaCropListener implements Listener {
 
     @EventHandler
     public void onBlockGrow(BlockGrowEvent event) {
-        handleGrowth(event.getBlock(), true);
+        handleGrowEvent(event);
     }
 
     @EventHandler
     public void onBlockFertilize(BlockFertilizeEvent event) {
-        Block block = event.getBlock();
-        handleGrowth(block, false);
+        handleFertilizeEvent(event);
     }
 
-    private void handleGrowth(Block block, boolean cancelIfNoAdvance) {
+    private void handleGrowEvent(BlockGrowEvent event) {
+        Block block = event.getBlock();
         if (!(block.getBlockData() instanceof Ageable)) {
             return;
         }
@@ -47,10 +47,13 @@ public final class VanillaCropListener implements Listener {
         WeatherManager weatherManager = services.get(WeatherManager.class);
         EnvironmentManager environmentManager = services.get(EnvironmentManager.class);
 
-        Optional<CropData> cropDataOpt = cropManager.getCropDataForLocation(loc);
-        if (!cropDataOpt.isPresent()) {
+        Optional<CropType> cropOpt = cropManager.getCropDataForLocation(loc);
+        if (cropOpt.isEmpty()) {
             return;
         }
+
+        // 该方块已被 NatureEngine 接管：阻止原版写入生长结果
+        event.setCancelled(true);
 
         Ageable ageable = (Ageable) block.getBlockData();
         int currentAge = ageable.getAge();
@@ -59,7 +62,7 @@ public final class VanillaCropListener implements Listener {
 
         GrowthContext context = new GrowthContext(
                 loc,
-                cropDataOpt.get(),
+                cropOpt.get(),
                 currentAge,
                 seasonManager.getCurrentSeason(block.getWorld()),
                 seasonManager.getSeasonProgress(block.getWorld()),
@@ -80,9 +83,52 @@ public final class VanillaCropListener implements Listener {
             int newAge = Math.min(ageable.getMaximumAge(), currentAge + result.getStageDelta());
             ageable.setAge(newAge);
             block.setBlockData(ageable, false);
-        } else if (cancelIfNoAdvance) {
-            // 没有推进阶段，阻止原版自己的生长
-            block.getState().update(false, false);
+        }
+    }
+
+    private void handleFertilizeEvent(BlockFertilizeEvent event) {
+        Block block = event.getBlock();
+        if (!(block.getBlockData() instanceof Ageable)) {
+            return;
+        }
+        Location loc = block.getLocation();
+        CropManager cropManager = services.get(CropManager.class);
+        SeasonManager seasonManager = services.get(SeasonManager.class);
+        WeatherManager weatherManager = services.get(WeatherManager.class);
+        EnvironmentManager environmentManager = services.get(EnvironmentManager.class);
+
+        Optional<CropType> cropOpt = cropManager.getCropDataForLocation(loc);
+        if (cropOpt.isEmpty()) {
+            return;
+        }
+
+        // 该方块已被 NatureEngine 接管：阻止骨粉原版逻辑直接推进
+        event.setCancelled(true);
+
+        Ageable ageable = (Ageable) block.getBlockData();
+        int currentAge = ageable.getAge();
+
+        EnvironmentContext envContext = environmentManager.getContext(block);
+        GrowthContext context = new GrowthContext(
+                loc,
+                cropOpt.get(),
+                currentAge,
+                seasonManager.getCurrentSeason(block.getWorld()),
+                seasonManager.getSeasonProgress(block.getWorld()),
+                weatherManager.getCurrentWeather(block.getWorld()),
+                envContext
+        );
+
+        GrowthResult result = cropManager.calculateGrowth(context);
+        if (result.isShouldWither()) {
+            ageable.setAge(0);
+            block.setBlockData(ageable, false);
+            return;
+        }
+        if (result.getStageDelta() > 0) {
+            int newAge = Math.min(ageable.getMaximumAge(), currentAge + result.getStageDelta());
+            ageable.setAge(newAge);
+            block.setBlockData(ageable, false);
         }
     }
 }

@@ -9,6 +9,7 @@ import java.util.Optional;
 
 /**
  * 作物相关的高层操作封装。
+ * 作为 Plant Growth Control System 的门面，统一对外暴露查询与生长计算能力。
  */
 public final class CropManager {
 
@@ -20,7 +21,7 @@ public final class CropManager {
         this.growthCalculator = growthCalculator;
     }
 
-    public Optional<CropData> getCropDataForLocation(Location location) {
+    public Optional<CropType> getCropDataForLocation(Location location) {
         if (location.getBlock() == null) {
             return Optional.empty();
         }
@@ -30,5 +31,10 @@ public final class CropManager {
     public GrowthResult calculateGrowth(GrowthContext context) {
         return growthCalculator.calculate(context);
     }
+
+    public com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthDebugInfo calculateGrowthDebug(GrowthContext context) {
+        return growthCalculator.calculateDebug(context);
+    }
 }
+
 

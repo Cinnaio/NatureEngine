@@ -18,6 +18,7 @@ public final class ConfigManager {
     private DebugConfigView debugConfigView;
     private WeatherConfigView weatherConfigView;
     private VisualConfigView visualConfigView;
+    private CropConfigView cropConfigView;
     private ConfigLoader loader;
 
     // 模块配置文件（保持同一个对象引用，便于运行时 reload 后所有 ConfigView 自动读到新值）
@@ -26,6 +27,7 @@ public final class ConfigManager {
     private FileConfiguration debugCfg;
     private FileConfiguration weatherCfg;
     private FileConfiguration visualCfg;
+    private FileConfiguration cropsCfg;
 
     public ConfigManager(Plugin plugin) {
         this.plugin = plugin;
@@ -40,13 +42,14 @@ public final class ConfigManager {
         this.debugCfg = loader.loadOrSaveDefault("config.yml");
         this.weatherCfg = loader.loadOrSaveDefault("weather.yml");
         this.visualCfg = loader.loadOrSaveDefault("visual.yml");
-
         this.seasonsCfg = loader.loadOrSaveDefault("seasons.yml");
+        this.cropsCfg = loader.loadOrSaveDefault("crops.yml");
         this.seasonConfigView = new SeasonConfigView(seasonsCfg);
         this.growthConfigView = new GrowthConfigView(growthCfg);
         this.debugConfigView = new DebugConfigView(debugCfg);
         this.weatherConfigView = new WeatherConfigView(weatherCfg);
         this.visualConfigView = new VisualConfigView(visualCfg);
+        this.cropConfigView = new CropConfigView(cropsCfg);
     }
 
     public FileConfiguration getConfig() {
@@ -73,6 +76,10 @@ public final class ConfigManager {
         return visualConfigView;
     }
 
+    public CropConfigView getCropConfig() {
+        return cropConfigView;
+    }
+
     public void reload() {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
@@ -80,7 +87,7 @@ public final class ConfigManager {
 
     /**
      * 按模块重载 YAML 文件（不会重建 ConfigView 对象，避免引用失效）。
-     * 支持：seasons/growth/debug/weather/visual/all
+     * 支持：seasons/growth/debug/weather/visual/crops/all
      */
     public void reloadModule(String module) {
         if (module == null) return;
@@ -92,6 +99,10 @@ public final class ConfigManager {
                 reloadYaml(debugCfg, "config.yml");
                 reloadYaml(weatherCfg, "weather.yml");
                 reloadYaml(visualCfg, "visual.yml");
+                reloadYaml(cropsCfg, "crops.yml");
+                if (cropConfigView != null) {
+                    cropConfigView.reload();
+                }
                 // 主配置（config.yml 之外的 plugin.yml 主配置）也一并刷新
                 reload();
             }
@@ -100,6 +111,12 @@ public final class ConfigManager {
             case "debug", "config" -> reloadYaml(debugCfg, "config.yml");
             case "weather" -> reloadYaml(weatherCfg, "weather.yml");
             case "visual" -> reloadYaml(visualCfg, "visual.yml");
+            case "crop", "crops" -> {
+                reloadYaml(cropsCfg, "crops.yml");
+                if (cropConfigView != null) {
+                    cropConfigView.reload();
+                }
+            }
             default -> {
                 // ignore unknown
             }

@@ -1,7 +1,7 @@
 package com.github.cinnaio.natureEngine.api;
 
 import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
-import com.github.cinnaio.natureEngine.core.agriculture.crop.CropData;
+import com.github.cinnaio.natureEngine.core.agriculture.crop.CropType;
 import com.github.cinnaio.natureEngine.core.agriculture.crop.CropManager;
 import org.bukkit.Location;
 
@@ -14,7 +14,7 @@ public final class CropAPI {
     private CropAPI() {
     }
 
-    public static Optional<CropData> getCropData(Location location) {
+    public static Optional<CropType> getCropData(Location location) {
         return SERVICES.get(CropManager.class).getCropDataForLocation(location);
     }
 }

@@ -12,7 +12,8 @@ lang:
   command:
     ne:
       help-title: "<color:#B8C7FF>[NatureEngine] <color:#A9B3C3>Commands:"
-      help-debug: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug <color:#A9B3C3>Show season/weather/environment info"
+      help-debug: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug <color:#A9B3C3>Show season/weather/env and crop debug"
+      help-debug-crop: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug crop <color:#A9B3C3>Show targeted crop growth debug only"
       help-season-info: "<color:#A9B3C3>- <color:#FFE2A9>/ne season info <color:#A9B3C3>Show current season info"
       help-season-next: "<color:#A9B3C3>- <color:#FFE2A9>/ne season next <color:#A9B3C3>Switch to next season"
       help-season-set: "<color:#A9B3C3>- <color:#FFE2A9>/ne season set <spring|summer|autumn|winter> <color:#A9B3C3>Set current season"
@@ -59,6 +60,8 @@ lang:
     season-line: "<color:#A9B3C3>Season <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
     weather-line: "<color:#A9B3C3>Weather <color:#FFE2A9>{weather}"
     env-line: "<color:#A9B3C3>Env <color:#FFE2A9>T={temp} <color:#A9B3C3>H={humidity} <color:#A9B3C3>Soil={soil} <color:#A9B3C3>Light={light}"
+    crop-line: "<color:#A9B3C3>Crop <color:#FFE2A9>{block} <color:#A9B3C3>({crop_id}) <color:#A9B3C3>Control <color:#FFE2A9>{crops_enabled} <color:#A9B3C3>/Enabled <color:#FFE2A9>{crop_enabled} <color:#A9B3C3>Stage <color:#FFE2A9>{age}<color:#A9B3C3>/{max_age} <color:#A9B3C3>CfgStages <color:#FFE2A9>{stages} <color:#A9B3C3>Th A={advance_th} W={wither_th} <color:#A9B3C3>Decision <color:#FFE2A9>{decision} <color:#A9B3C3>Total <color:#FFE2A9>{total} <color:#A9B3C3>Factors T={tf} H={hf} L={lf} S={sf} W={wf} <color:#A9B3C3>Env T={env_temp} H={env_hum} Soil={env_soil} Light={env_light} <color:#A9B3C3>Crop OptT={opt_temp}±{temp_tol} OptH={opt_hum}±{hum_tol} MinL={min_light} Seasons={pref_seasons}"
+    crop-none: "<color:#A9B3C3>Crop <color:#FFE2A9>{block} <color:#A9B3C3>is not controlled (crops.enabled={crops_enabled}, or not registered/disabled)"
 
   visual:
     only-world: "<color:#FFB4B4>This command only works in world."

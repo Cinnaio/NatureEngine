@@ -1,6 +1,6 @@
 package com.github.cinnaio.natureEngine.core.agriculture.growth;
 
-import com.github.cinnaio.natureEngine.core.agriculture.crop.CropData;
+import com.github.cinnaio.natureEngine.core.agriculture.crop.CropType;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherType;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
@@ -12,7 +12,7 @@ import org.bukkit.Location;
 public final class GrowthContext {
 
     private final Location location;
-    private final CropData cropData;
+    private final CropType cropType;
     private final int currentStage;
     private final SeasonType seasonType;
     private final double seasonProgress;
@@ -21,7 +21,7 @@ public final class GrowthContext {
 
     public GrowthContext(
             Location location,
-            CropData cropData,
+            CropType cropType,
             int currentStage,
             SeasonType seasonType,
             double seasonProgress,
@@ -29,7 +29,7 @@ public final class GrowthContext {
             EnvironmentContext environmentContext
     ) {
         this.location = location;
-        this.cropData = cropData;
+        this.cropType = cropType;
         this.currentStage = currentStage;
         this.seasonType = seasonType;
         this.seasonProgress = seasonProgress;
@@ -41,8 +41,8 @@ public final class GrowthContext {
         return location;
     }
 
-    public CropData getCropData() {
-        return cropData;
+    public CropType getCropType() {
+        return cropType;
     }
 
     public int getCurrentStage() {

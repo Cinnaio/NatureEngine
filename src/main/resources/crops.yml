@@ -1,0 +1,40 @@
+## ============================================================
+## 作物配置（Crop Growth Control）
+## ------------------------------------------------------------
+## 本文件用于定义原版作物的生长偏好参数，未来也可扩展为
+## 自定义植物的配置入口。
+##
+## 注意：
+## - 所有温度单位为摄氏度 (°C)
+## - 湿度为 0.0 - 1.0
+## - min-light 为 Minecraft 方块亮度（0-15）
+## ============================================================
+
+crops:
+  enabled: true  # 全局开关：false 时禁用 NatureEngine 对作物的接管
+
+  vanilla:
+    # 小麦
+    WHEAT:
+      enabled: true
+      stages: 8
+      base-ticks-per-stage: 2400
+      optimal-temperature: 18.0
+      temperature-tolerance: 10.0
+      optimal-humidity: 0.6
+      humidity-tolerance: 0.3
+      min-light: 9
+      preferred-seasons: [SPRING, SUMMER]
+
+    # 其余作物可按需补充：
+    # CARROTS:
+    #   enabled: true
+    #   stages: 8
+    #   base-ticks-per-stage: 2400
+    #   optimal-temperature: 18.0
+    #   temperature-tolerance: 10.0
+    #   optimal-humidity: 0.6
+    #   humidity-tolerance: 0.3
+    #   min-light: 9
+    #   preferred-seasons: [SPRING, SUMMER]
+

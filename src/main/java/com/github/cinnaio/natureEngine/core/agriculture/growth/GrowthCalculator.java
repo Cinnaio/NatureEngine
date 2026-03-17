@@ -20,34 +20,38 @@ public final class GrowthCalculator {
     }
 
     public GrowthResult calculate(GrowthContext context) {
+        return calculateDebug(context).getResult();
+    }
+
+    public GrowthDebugInfo calculateDebug(GrowthContext context) {
         EnvironmentContext env = context.getEnvironmentContext();
 
         double temperatureFactor = computeTemperatureFactor(
                 env.getTemperature(),
-                context.getCropData().getOptimalTemperature(),
-                context.getCropData().getTemperatureTolerance()
+                context.getCropType().getOptimalTemperature(),
+                context.getCropType().getTemperatureTolerance()
         );
         double humidityFactor = computeHumidityFactor(
                 env.getHumidity(),
-                context.getCropData().getOptimalHumidity(),
-                context.getCropData().getHumidityTolerance()
+                context.getCropType().getOptimalHumidity(),
+                context.getCropType().getHumidityTolerance()
         );
-        double lightFactor = env.getLightLevel() >= context.getCropData().getMinLight() ? 1.0 : 0.3;
+        double lightFactor = env.getLightLevel() >= context.getCropType().getMinLight() ? 1.0 : 0.3;
         double seasonFactor = computeSeasonFactor(
                 context.getSeasonType(),
-                context.getCropData().getPreferredSeasons()
+                context.getCropType().getPreferredSeasons()
         );
         double weatherFactor = computeWeatherFactor(context.getWeatherType());
 
         double total = temperatureFactor * humidityFactor * lightFactor * seasonFactor * weatherFactor;
 
         if (total <= configView.getWitherThreshold()) {
-            return GrowthResult.wither();
+            return new GrowthDebugInfo(temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor, total, GrowthResult.wither());
         }
         if (total >= configView.getAdvanceThreshold()) {
-            return GrowthResult.advanceOneStage(total);
+            return new GrowthDebugInfo(temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor, total, GrowthResult.advanceOneStage(total));
         }
-        return GrowthResult.noChange();
+        return new GrowthDebugInfo(temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor, total, GrowthResult.noChange());
     }
 
     private double computeTemperatureFactor(double actual, double optimal, double tolerance) {
