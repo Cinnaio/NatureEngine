@@ -7,9 +7,6 @@ import com.github.cinnaio.natureEngine.core.agriculture.crop.listener.VanillaCro
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthCalculator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
 import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
-import com.github.cinnaio.natureEngine.core.agriculture.season.visual.tint.BiomeTintConfigLoader;
-import com.github.cinnaio.natureEngine.core.agriculture.season.visual.tint.BiomeTintPalette;
-import com.github.cinnaio.natureEngine.core.agriculture.season.visual.tint.ProtocolBiomeTintListener;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherController;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentManager;
@@ -40,7 +37,6 @@ public final class LifecycleManager {
     private CraftEngineHook craftEngineHook;
     private PacketSeasonVisualizer packetSeasonVisualizer;
     private ProtocolLibHook protocolLibHook;
-    private ProtocolBiomeTintListener protocolBiomeTintListener;
 
     public LifecycleManager(JavaPlugin plugin, ServiceLocator serviceLocator) {
         this.plugin = plugin;
@@ -82,9 +78,6 @@ public final class LifecycleManager {
         serviceLocator.register(ProtocolLibHook.class, protocolLibHook);
 
         // biome tint（仿 AdvancedSeasons）：读取 plugins/NatureEngine/biomeConfiguration/*.yml 并拦截注册表同步包改 effects 颜色
-        BiomeTintPalette tintPalette = new BiomeTintConfigLoader(plugin).loadOrEmpty();
-        this.protocolBiomeTintListener = new ProtocolBiomeTintListener(plugin, seasonManager, tintPalette);
-        this.protocolBiomeTintListener.start();
 
         // 注册原版作物监听
         Bukkit.getPluginManager().registerEvents(new VanillaCropListener(), plugin);

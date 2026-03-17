@@ -18,7 +18,8 @@ visual:
   season-biome-default:
     SPRING: terralith:blooming_valley
     SUMMER: terralith:lush_valley
-    AUTUMN: terralith:scarlet_mountains
+    # 秋季：偏黄/橙/褐，但不过度偏红、不过于寒冷
+    AUTUMN: terralith:temperate_highlands
     WINTER: terralith:snowy_maple_forest
 
   # 按原版群系细调：将 vanilla 主要地形类型映射到 terralith 的更丰富风格
@@ -101,35 +102,35 @@ visual:
       terralith:alpha_islands: terralith:alpha_islands
       terralith:alpha_islands_winter: terralith:alpha_islands
     AUTUMN:
-      # 秋季：黄/橙/红更明显（更接近 AdvancedSeasons 的 fall 草色/树色）
-      minecraft:plains: terralith:moonlight_valley
-      minecraft:sunflower_plains: terralith:moonlight_valley
-      minecraft:meadow: terralith:painted_mountains
+      # 秋季：偏黄/橙/褐，但保持“无雪林、非极寒”
+      minecraft:plains: terralith:brushland
+      minecraft:sunflower_plains: terralith:highlands
+      minecraft:meadow: terralith:temperate_highlands
 
-      minecraft:forest: terralith:scarlet_mountains
+      minecraft:forest: terralith:temperate_highlands
       minecraft:flower_forest: terralith:moonlight_grove
       minecraft:birch_forest: terralith:birch_taiga
       minecraft:dark_forest: terralith:haze_mountain
 
-      # 针叶林：偏灰绿（不要直接进雪）
-      minecraft:taiga: terralith:siberian_taiga
-      minecraft:old_growth_pine_taiga: terralith:siberian_taiga
-      minecraft:old_growth_spruce_taiga: terralith:siberian_grove
+      # 针叶林：略偏灰绿，但不进入雪地
+      minecraft:taiga: terralith:temperate_highlands
+      minecraft:old_growth_pine_taiga: terralith:temperate_highlands
+      minecraft:old_growth_spruce_taiga: terralith:temperate_highlands
 
-      # 干旱/恶地：秋季偏红/土色
+      # 干旱/恶地：秋季偏土黄/橙
       minecraft:desert: terralith:ancient_sands
       minecraft:badlands: terralith:savanna_badlands
 
-      # 山地：彩绘/红山
+      # 山地：用彩绘/褐色高地，避免 scarlet_mountains 那种通红又偏冷的群系
       minecraft:windswept_hills: terralith:painted_mountains
-      minecraft:stony_peaks: terralith:scarlet_mountains
-      minecraft:jagged_peaks: terralith:emerald_peaks
+      minecraft:stony_peaks: terralith:highlands
+      minecraft:jagged_peaks: terralith:rocky_shrubland
 
-      # 湿地：偏褐
+      # 湿地：略偏褐绿
       minecraft:swamp: terralith:orchid_swamp
       minecraft:mangrove_swamp: terralith:orchid_swamp
 
-      # Terralith 自身季节变体
+      # Terralith 自身季节变体（Skylands / Alpha 保持秋色主题）
       terralith:skylands_spring: terralith:skylands_autumn
       terralith:skylands_summer: terralith:skylands_autumn
       terralith:skylands_autumn: terralith:skylands_autumn

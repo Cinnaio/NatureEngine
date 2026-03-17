@@ -49,12 +49,23 @@ tasks.withType(JavaCompile).configureEach {
 tasks.register('deployToSurvival', Copy) {
     dependsOn build   // 保证先构建再复制
 
+    def pluginsDir = "E:/Database/Minecraft/Server/survival_20260120_1444/plugins"
+    def deleteDir = file("${pluginsDir}/NatureEngine")
+
+    doFirst {
+        // 如果带 -Pr 参数就删除文件夹
+        if (project.hasProperty("r")) {
+            if (deleteDir.exists()) {
+                println "Deleting ${deleteDir}"
+                deleteDir.deleteDir()
+            }
+        }
+    }
+
     from(layout.buildDirectory.file("libs/${project.name}-${version}.jar"))
-    into("E:/Database/Minecraft/Server/survival_20260120_1444/plugins")
+    into(pluginsDir)
 
     rename { fileName ->
-        // 也可以固定成 NatureEngine.jar，自己选
-        // "NatureEngine.jar"
         "NatureEngine.jar"
     }
 }
