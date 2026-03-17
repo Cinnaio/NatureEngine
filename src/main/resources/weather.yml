@@ -47,23 +47,24 @@ weather:
     # temperature-delta: 在季节基准温度上的增减；humidity/soil-moisture-delta 同理
     # growth-multiplier: 该天气下作物生长的额外倍率（与季节 growth-multiplier 叠加）
     SUNNY:
-      temperature-delta: 2.0
-      humidity-delta: -0.1
-      soil-moisture-delta: -0.05
+      # vanilla 标尺：温度约 0~2，湿度 0~1
+      temperature-delta: 0.05
+      humidity-delta: -0.02
+      soil-moisture-delta: -0.02
       growth-multiplier: 1.0
     RAIN:
-      temperature-delta: -1.0
-      humidity-delta: 0.2
-      soil-moisture-delta: 0.25
+      temperature-delta: -0.03
+      humidity-delta: 0.05
+      soil-moisture-delta: 0.20
       growth-multiplier: 1.1
     STORM:
-      temperature-delta: -2.0
-      humidity-delta: 0.25
-      soil-moisture-delta: 0.30
-      growth-multiplier: 0.9
+      temperature-delta: -0.05
+      humidity-delta: 0.06
+      soil-moisture-delta: 0.25
+      growth-multiplier: 0.93
     SNOW:
-      temperature-delta: -5.0
-      humidity-delta: 0.05
+      temperature-delta: -0.12
+      humidity-delta: 0.02
       soil-moisture-delta: 0.10
-      growth-multiplier: 0.6
+      growth-multiplier: 0.85
 

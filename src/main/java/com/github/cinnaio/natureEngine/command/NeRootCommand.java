@@ -9,12 +9,15 @@ import com.github.cinnaio.natureEngine.core.agriculture.crop.CropType;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonNotifier;
 import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
+import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherType;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
+import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthDebugInfo;
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthContext;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
 import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.text.I18n;
 import com.github.cinnaio.natureEngine.engine.text.Text;
+import com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineTrackService;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -54,6 +57,9 @@ public final class NeRootCommand extends Command {
         if ("reload".equals(sub)) {
             return handleReload(sender, Arrays.copyOfRange(args, 1, args.length));
         }
+        if ("sim".equals(sub)) {
+            return handleSim(sender, Arrays.copyOfRange(args, 1, args.length));
+        }
 
         sendHelp(sender);
         return true;
@@ -66,6 +72,7 @@ public final class NeRootCommand extends Command {
                 sender.sendMessage(i18n.tr(p, "command.ne.help-title"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-debug"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-debug-crop"));
+                sender.sendMessage(i18n.tr(p, "command.ne.help-sim-crop"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-season-info"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-season-next"));
                 sender.sendMessage(i18n.tr(p, "command.ne.help-season-set"));
@@ -96,7 +103,7 @@ public final class NeRootCommand extends Command {
 
         // /ne debug crop：仅输出指向目标的作物生长调试
         if (args != null && args.length > 0 && "crop".equalsIgnoreCase(args[0])) {
-            return handleDebugCrop(player);
+            return handleDebugCrop(player, true);
         }
 
         var season = SeasonAPI.getCurrentSeason(world);
@@ -121,14 +128,14 @@ public final class NeRootCommand extends Command {
             )));
 
             // /ne debug（默认）附带一行 crop 调试，行为与 /ne debug crop 相同
-            handleDebugCrop(player);
+            handleDebugCrop(player, false);
         } else {
             player.sendMessage(Text.parse("<color:#B8C7FF>[NatureEngine Debug]"));
         }
         return true;
     }
 
-    private boolean handleDebugCrop(Player player) {
+    private boolean handleDebugCrop(Player player, boolean verbose) {
         World world = player.getWorld();
         var season = SeasonAPI.getCurrentSeason(world);
         double progress = SeasonAPI.getSeasonProgress(world);
@@ -202,14 +209,334 @@ public final class NeRootCommand extends Command {
             ph.put("lf", String.format("%.2f", info.getLightFactor()));
             ph.put("sf", String.format("%.2f", info.getSeasonFactor()));
             ph.put("wf", String.format("%.2f", info.getWeatherFactor()));
-            player.sendMessage(i18n.tr(player, "debug.crop-line", ph));
+            player.sendMessage(i18n.tr(player, "debug.crop-summary", ph));
+            if (verbose) {
+                player.sendMessage(i18n.tr(player, "debug.crop-factors", ph));
+                player.sendMessage(i18n.tr(player, "debug.crop-env", ph));
+                player.sendMessage(i18n.tr(player, "debug.crop-thresholds", ph));
+                player.sendMessage(i18n.tr(player, "debug.crop-params", ph));
+            }
         } else {
-            player.sendMessage(i18n.tr(player, "debug.crop-none", Map.of(
-                    "block", target.getType().name(),
-                    "crops_enabled", cropsEnabled ? "true" : "false"
-            )));
+            if (!tryDebugCraftEngineCrop(player, verbose, i18n, cropManager, configManager, target, season, progress, weather, advanceTh, witherTh, cropsEnabled)) {
+                player.sendMessage(i18n.tr(player, "debug.crop-none", Map.of(
+                        "block", target.getType().name(),
+                        "crops_enabled", cropsEnabled ? "true" : "false"
+                )));
+            }
         }
         return true;
+    }
+
+    private boolean tryDebugCraftEngineCrop(
+            Player player,
+            boolean verbose,
+            I18n i18n,
+            CropManager cropManager,
+            ConfigManager configManager,
+            Block target,
+            SeasonType season,
+            double progress,
+            WeatherType weather,
+            double advanceTh,
+            double witherTh,
+            boolean cropsEnabled
+    ) {
+        if (configManager == null || configManager.getCropConfig() == null) return false;
+        if (!configManager.getCropConfig().isGlobalEnabled()) return false;
+
+        CraftEngineState ce = CraftEngineState.tryResolve(target);
+        if (ce == null) return false;
+        String customId = ce.customId;
+
+        var cropOpt = configManager.getCropConfig().getCraftEngineType(customId);
+        if (cropOpt.isEmpty()) return false;
+        CropType crop = cropOpt.get();
+
+        Object ageProp = resolveCraftEngineAgeProperty(configManager, customId, ce.state);
+        Integer ageV = ageProp != null ? extractCraftEngineInt(ce.state, ageProp) : null;
+        int age = ageV != null ? ageV : 0;
+        int maxAge = ageProp != null ? maxCraftEngineInt(ageProp) : -1;
+
+        EnvironmentContext cropEnv = EnvironmentAPI.getContext(target);
+        GrowthContext ctx = new GrowthContext(
+                target.getLocation(),
+                crop,
+                Math.max(0, age),
+                season,
+                progress,
+                weather,
+                cropEnv
+        );
+        GrowthDebugInfo info = cropManager.calculateGrowthDebug(ctx);
+
+        // 识别到 CraftEngine 作物时，顺手加入追踪，确保后续能被 tick 接管（避免“只监听放置事件”的漏追踪）
+        CraftEngineTrackService controller = SERVICES.get(CraftEngineTrackService.class);
+        if (controller != null) {
+            controller.track(target);
+        }
+
+        String decision = info.getResult().isShouldWither()
+                ? "WITHER"
+                : (info.getResult().getStageDelta() > 0 ? "ADVANCE" : "BLOCK");
+
+        java.util.Map<String, String> ph = new java.util.HashMap<>();
+        ph.put("block", customId); // 显示真实 custom id，而不是伪装 Material（如 BRICKS）
+        ph.put("crop_id", crop.getId());
+        ph.put("crops_enabled", cropsEnabled ? "true" : "false");
+        ph.put("crop_enabled", crop.isEnabled() ? "true" : "false");
+        ph.put("age", String.valueOf(age));
+        ph.put("max_age", String.valueOf(maxAge));
+        ph.put("stages", String.valueOf(crop.getStages()));
+        ph.put("min_light", String.valueOf(crop.getMinLight()));
+        ph.put("opt_temp", String.format("%.1f", crop.getOptimalTemperature()));
+        ph.put("temp_tol", String.format("%.1f", crop.getTemperatureTolerance()));
+        ph.put("opt_hum", String.format("%.2f", crop.getOptimalHumidity()));
+        ph.put("hum_tol", String.format("%.2f", crop.getHumidityTolerance()));
+        ph.put("pref_seasons", crop.getPreferredSeasons().toString());
+        ph.put("env_temp", String.format("%.1f", cropEnv.getTemperature()));
+        ph.put("env_hum", String.format("%.2f", cropEnv.getHumidity()));
+        ph.put("env_soil", String.format("%.2f", cropEnv.getSoilMoisture()));
+        ph.put("env_light", String.valueOf(cropEnv.getLightLevel()));
+        ph.put("advance_th", String.format("%.2f", advanceTh));
+        ph.put("wither_th", String.format("%.2f", witherTh));
+        ph.put("decision", decision);
+        ph.put("total", String.format("%.3f", info.getTotal()));
+        ph.put("tf", String.format("%.2f", info.getTemperatureFactor()));
+        ph.put("hf", String.format("%.2f", info.getHumidityFactor()));
+        ph.put("lf", String.format("%.2f", info.getLightFactor()));
+        ph.put("sf", String.format("%.2f", info.getSeasonFactor()));
+        ph.put("wf", String.format("%.2f", info.getWeatherFactor()));
+
+        player.sendMessage(i18n.tr(player, "debug.crop-summary", ph));
+        if (verbose) {
+            player.sendMessage(i18n.tr(player, "debug.crop-factors", ph));
+            player.sendMessage(i18n.tr(player, "debug.crop-env", ph));
+            player.sendMessage(i18n.tr(player, "debug.crop-thresholds", ph));
+            player.sendMessage(i18n.tr(player, "debug.crop-params", ph));
+        }
+        return true;
+    }
+
+    private static Object resolveCraftEngineAgeProperty(ConfigManager cm, String customId, Object state) {
+        var configured = cm.getCropConfig().getCraftEngineAgeProperty(customId);
+        if (configured.isPresent()) {
+            Object p = findCraftEnginePropertyByName(state, configured.get());
+            if (p != null) return p;
+        }
+        for (String name : new String[]{"age", "stage", "growth"}) {
+            Object p = findCraftEnginePropertyByName(state, name);
+            if (p != null) return p;
+        }
+        return null;
+    }
+
+    private static Object findCraftEnginePropertyByName(Object state, String name) {
+        try {
+            Object props = invoke(state, "getProperties");
+            if (!(props instanceof Iterable<?> it)) return null;
+            for (Object p : it) {
+                if (p == null) continue;
+                Object n = invoke(p, "name");
+                if (n != null && n.toString().equalsIgnoreCase(name)) return p;
+            }
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    private static Integer extractCraftEngineInt(Object state, Object property) {
+        try {
+            Object v = invokeSingleArgByName(state, "getNullable", property);
+            if (v instanceof Integer i) return i;
+            if (v instanceof Number n) return n.intValue();
+        } catch (Throwable ignored) {
+        }
+        return null;
+    }
+
+    private static int maxCraftEngineInt(Object property) {
+        try {
+            Object valuesObj = invoke(property, "possibleValues");
+            if (!(valuesObj instanceof java.util.List<?> values)) return 0;
+            int max = Integer.MIN_VALUE;
+            for (Object o : values) {
+                if (o instanceof Number n) max = Math.max(max, n.intValue());
+            }
+            return max == Integer.MIN_VALUE ? 0 : max;
+        } catch (Throwable ignored) {
+        }
+        return 0;
+    }
+
+    private static final class CraftEngineState {
+        final String customId;
+        final Object state;
+
+        private CraftEngineState(String customId, Object state) {
+            this.customId = customId;
+            this.state = state;
+        }
+
+        static CraftEngineState tryResolve(Block block) {
+            try {
+                Class<?> blocksClz = Class.forName("net.momirealms.craftengine.bukkit.api.CraftEngineBlocks");
+                Object st = invokeStatic(blocksClz, "getCustomBlockState", new Class[]{Block.class}, new Object[]{block});
+                if (st == null) return null;
+                Object empty = invoke(st, "isEmpty");
+                if (empty instanceof Boolean b && b) return null;
+
+                Object ownerWrapper = invoke(st, "owner");
+                if (ownerWrapper == null) return null;
+                Object ownerVal = invoke(ownerWrapper, "value");
+                if (ownerVal == null) return null;
+                Object idObj = invoke(ownerVal, "id");
+                if (idObj == null) return null;
+                Object idStr = invoke(idObj, "asString");
+                if (idStr == null) return null;
+                return new CraftEngineState(idStr.toString(), st);
+            } catch (Throwable ignored) {
+                return null;
+            }
+        }
+    }
+
+    private static Object invoke(Object target, String method, Class<?>[] paramTypes, Object[] args) throws Exception {
+        java.lang.reflect.Method m = target.getClass().getMethod(method, paramTypes);
+        m.setAccessible(true);
+        return m.invoke(target, args);
+    }
+
+    private static Object invoke(Object target, String method) throws Exception {
+        java.lang.reflect.Method m = target.getClass().getMethod(method);
+        m.setAccessible(true);
+        return m.invoke(target);
+    }
+
+    private static Object invokeStatic(Class<?> clz, String method, Class<?>[] paramTypes, Object[] args) throws Exception {
+        java.lang.reflect.Method m = clz.getMethod(method, paramTypes);
+        m.setAccessible(true);
+        return m.invoke(null, args);
+    }
+
+    private static Object invokeSingleArgByName(Object target, String methodName, Object arg) throws Exception {
+        for (java.lang.reflect.Method m : target.getClass().getMethods()) {
+            if (!m.getName().equals(methodName)) continue;
+            if (m.getParameterCount() != 1) continue;
+            m.setAccessible(true);
+            return m.invoke(target, arg);
+        }
+        throw new NoSuchMethodException(target.getClass().getName() + "#" + methodName + "(*)");
+    }
+
+    private boolean handleSim(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(Text.parse("<color:#FFB4B4>该命令只能由玩家执行。</>"));
+            return true;
+        }
+        if (args == null || args.length == 0) {
+            sendHelp(sender);
+            return true;
+        }
+        if ("crop".equalsIgnoreCase(args[0])) {
+            return handleSimCrop(player);
+        }
+        sendHelp(sender);
+        return true;
+    }
+
+    /**
+     * 只输出计算结果：对目标作物在“同一基准环境”下模拟四季 × 天气的 total 与判定。
+     */
+    private boolean handleSimCrop(Player player) {
+        I18n i18n = SERVICES.get(I18n.class);
+        if (i18n == null) {
+            player.sendMessage(Text.parse("<color:#FFB4B4>i18n 未初始化。</>"));
+            return true;
+        }
+        ConfigManager cm = SERVICES.get(ConfigManager.class);
+        CropManager cropManager = SERVICES.get(CropManager.class);
+        if (cm == null || cropManager == null) {
+            player.sendMessage(Text.parse("<color:#FFB4B4>系统未初始化。</>"));
+            return true;
+        }
+
+        Block target = player.getTargetBlockExact(6);
+        if (target == null) target = player.getLocation().getBlock();
+        Location loc = target.getLocation();
+
+        var cropOpt = cropManager.getCropDataForLocation(loc);
+        if (cropOpt.isEmpty()) {
+            player.sendMessage(i18n.tr(player, "sim.crop-none", Map.of("block", target.getType().name())));
+            return true;
+        }
+
+        CropType crop = cropOpt.get();
+        EnvironmentContext envNow = EnvironmentAPI.getContext(target);
+        SeasonType currentSeason = SeasonAPI.getCurrentSeason(player.getWorld());
+        WeatherType currentWeather = WeatherAPI.getCurrentWeather(player.getWorld());
+
+        double seasonTempNow = cm.getSeasonConfig().getTemperatureDelta(currentSeason);
+        double seasonHumNow = cm.getSeasonConfig().getHumidityDelta(currentSeason);
+        var weatherProfileNow = cm.getWeatherConfig().getProfile(currentWeather);
+
+        // 反推基准：envNow = base + seasonDelta(now) + weatherDelta(now)
+        double baseTemp = envNow.getTemperature() - seasonTempNow - weatherProfileNow.getTemperatureDelta();
+        double baseHum = clamp01(envNow.getHumidity() - seasonHumNow - weatherProfileNow.getHumidityDelta());
+        double baseSoil = clamp01(envNow.getSoilMoisture() - weatherProfileNow.getSoilMoistureDelta());
+        int light = envNow.getLightLevel();
+
+        double advanceTh = cm.getGrowthConfig().getAdvanceThreshold();
+        double witherTh = cm.getGrowthConfig().getWitherThreshold();
+
+        player.sendMessage(i18n.tr(player, "sim.crop-header", Map.of(
+                "block", target.getType().name(),
+                "crop_id", crop.getId(),
+                "base_t", String.format("%.2f", baseTemp),
+                "base_h", String.format("%.2f", baseHum),
+                "base_soil", String.format("%.2f", baseSoil),
+                "light", String.valueOf(light),
+                "advance_th", String.format("%.2f", advanceTh),
+                "wither_th", String.format("%.2f", witherTh)
+        )));
+
+        WeatherType[] weathers = new WeatherType[]{WeatherType.SUNNY, WeatherType.RAIN, WeatherType.STORM, WeatherType.SNOW, WeatherType.CLOUDY};
+        for (SeasonType s : SeasonType.values()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(s.name()).append(": ");
+            for (int i = 0; i < weathers.length; i++) {
+                WeatherType w = weathers[i];
+                var wp = cm.getWeatherConfig().getProfile(w);
+                double t = baseTemp + cm.getSeasonConfig().getTemperatureDelta(s) + wp.getTemperatureDelta();
+                double h = clamp01(baseHum + cm.getSeasonConfig().getHumidityDelta(s) + wp.getHumidityDelta());
+                double soil = clamp01(baseSoil + wp.getSoilMoistureDelta());
+                EnvironmentContext env = new EnvironmentContext(t, h, soil, light);
+
+                GrowthContext ctx = new GrowthContext(
+                        loc,
+                        crop,
+                        0,
+                        s,
+                        0.0,
+                        w,
+                        env
+                );
+                var info = cropManager.calculateGrowthDebug(ctx);
+                String decision = info.getResult().isShouldWither()
+                        ? "W"
+                        : (info.getResult().getStageDelta() > 0 ? "A" : "B");
+                sb.append(w.name()).append("=").append(String.format("%.3f", info.getTotal())).append("(").append(decision).append(")");
+                if (i != weathers.length - 1) sb.append("  ");
+            }
+            player.sendMessage(Text.parse("<color:#A9B3C3>" + sb));
+        }
+        player.sendMessage(i18n.tr(player, "sim.crop-legend"));
+        return true;
+    }
+
+    private static double clamp01(double v) {
+        if (v < 0.0) return 0.0;
+        if (v > 1.0) return 1.0;
+        return v;
     }
 
     private boolean handleSeason(CommandSender sender, String[] args) {

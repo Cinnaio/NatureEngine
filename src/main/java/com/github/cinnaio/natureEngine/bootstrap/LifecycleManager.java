@@ -15,6 +15,7 @@ import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.scheduler.GlobalScheduler;
 import com.github.cinnaio.natureEngine.engine.text.I18n;
 import com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineHook;
+import com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineCropController;
 import com.github.cinnaio.natureEngine.integration.customnameplates.CustomNameplatesHook;
 import com.github.cinnaio.natureEngine.integration.placeholderapi.NatureEngineExpansion;
 import com.github.cinnaio.natureEngine.integration.protocollib.ProtocolLibHook;
@@ -39,6 +40,7 @@ public final class LifecycleManager {
     private EnvironmentManager environmentManager;
     private CropManager cropManager;
     private CraftEngineHook craftEngineHook;
+    private CraftEngineCropController craftEngineCropController;
     private CustomNameplatesHook customNameplatesHook;
     private PacketSeasonVisualizer packetSeasonVisualizer;
     private ProtocolLibHook protocolLibHook;
@@ -74,7 +76,7 @@ public final class LifecycleManager {
         this.weatherManager = new WeatherManager(plugin, globalScheduler, seasonManager, configManager.getWeatherConfig(), weatherController);
         this.weatherManager.start();
 
-        this.environmentManager = new EnvironmentManager(weatherManager, configManager.getWeatherConfig());
+        this.environmentManager = new EnvironmentManager(seasonManager, configManager.getSeasonConfig(), weatherManager, configManager.getWeatherConfig());
         CropRegistry cropRegistry = new CropRegistry(configManager.getCropConfig());
         GrowthCalculator growthCalculator = new GrowthCalculator(configManager.getGrowthConfig(), configManager.getWeatherConfig());
         this.cropManager = new CropManager(cropRegistry, growthCalculator);
@@ -95,6 +97,21 @@ public final class LifecycleManager {
 
         // 注册原版作物监听
         Bukkit.getPluginManager().registerEvents(new VanillaCropListener(), plugin);
+
+        // CraftEngine 植物接管（软依赖）
+        if (craftEngineHook.isPresent()) {
+            craftEngineCropController = new CraftEngineCropController(
+                    plugin,
+                    configManager,
+                    globalScheduler,
+                    seasonManager,
+                    weatherManager,
+                    environmentManager,
+                    cropManager
+            );
+            craftEngineCropController.start();
+            serviceLocator.register(com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineTrackService.class, craftEngineCropController);
+        }
 
         // 注册 /ne 命令（包含 ne debug）
         registerCommands();

@@ -5,7 +5,7 @@
 ## 自定义植物的配置入口。
 ##
 ## 注意：
-## - 所有温度单位为摄氏度 (°C)
+## - 温度使用 vanilla 标尺（World#getTemperature(x,z) 约 0~2）
 ## - 湿度为 0.0 - 1.0
 ## - min-light 为 Minecraft 方块亮度（0-15）
 ## ============================================================
@@ -19,22 +19,123 @@ crops:
       enabled: true
       stages: 8
       base-ticks-per-stage: 2400
-      optimal-temperature: 18.0
-      temperature-tolerance: 10.0
-      optimal-humidity: 0.6
-      humidity-tolerance: 0.3
+      optimal-temperature: 0.90
+      temperature-tolerance: 0.70
+      optimal-humidity: 0.70
+      humidity-tolerance: 0.50
       min-light: 9
       preferred-seasons: [SPRING, SUMMER]
 
-    # 其余作物可按需补充：
-    # CARROTS:
-    #   enabled: true
-    #   stages: 8
-    #   base-ticks-per-stage: 2400
-    #   optimal-temperature: 18.0
-    #   temperature-tolerance: 10.0
-    #   optimal-humidity: 0.6
-    #   humidity-tolerance: 0.3
-    #   min-light: 9
-    #   preferred-seasons: [SPRING, SUMMER]
+    # 胡萝卜（略快）
+    CARROTS:
+      enabled: true
+      stages: 8
+      base-ticks-per-stage: 2200
+      optimal-temperature: 0.90
+      temperature-tolerance: 0.70
+      optimal-humidity: 0.70
+      humidity-tolerance: 0.50
+      min-light: 9
+      preferred-seasons: [SPRING, SUMMER]
+
+    # 土豆（略快）
+    POTATOES:
+      enabled: true
+      stages: 8
+      base-ticks-per-stage: 2200
+      optimal-temperature: 0.90
+      temperature-tolerance: 0.70
+      optimal-humidity: 0.70
+      humidity-tolerance: 0.50
+      min-light: 9
+      preferred-seasons: [SPRING, SUMMER]
+
+    # 甜菜根（略慢）
+    BEETROOTS:
+      enabled: true
+      stages: 4
+      base-ticks-per-stage: 2600
+      optimal-temperature: 0.85
+      temperature-tolerance: 0.65
+      optimal-humidity: 0.70
+      humidity-tolerance: 0.50
+      min-light: 9
+      preferred-seasons: [SPRING, SUMMER]
+
+    # 下界疣（明显更慢，且不需要光照）
+    NETHER_WART:
+      enabled: true
+      stages: 4
+      base-ticks-per-stage: 3200
+      optimal-temperature: 1.20
+      temperature-tolerance: 0.90
+      optimal-humidity: 0.40
+      humidity-tolerance: 0.40
+      min-light: 0
+      preferred-seasons: [WINTER, AUTUMN]
+
+    # 可可豆（中等偏慢）
+    COCOA:
+      enabled: true
+      stages: 3
+      base-ticks-per-stage: 2800
+      optimal-temperature: 1.40
+      temperature-tolerance: 0.80
+      optimal-humidity: 0.80
+      humidity-tolerance: 0.60
+      min-light: 9
+      preferred-seasons: [SUMMER]
+
+    # 西瓜茎（中等偏慢）
+    MELON_STEM:
+      enabled: true
+      stages: 8
+      base-ticks-per-stage: 2600
+      optimal-temperature: 1.10
+      temperature-tolerance: 0.75
+      optimal-humidity: 0.70
+      humidity-tolerance: 0.50
+      min-light: 9
+      preferred-seasons: [SUMMER]
+
+    # 南瓜茎（中等偏慢）
+    PUMPKIN_STEM:
+      enabled: true
+      stages: 8
+      base-ticks-per-stage: 2600
+      optimal-temperature: 1.00
+      temperature-tolerance: 0.75
+      optimal-humidity: 0.70
+      humidity-tolerance: 0.50
+      min-light: 9
+      preferred-seasons: [SUMMER, AUTUMN]
+
+    # 甜莓丛（偏快，且对湿度更敏感一些）
+    SWEET_BERRY_BUSH:
+      enabled: true
+      stages: 4
+      base-ticks-per-stage: 1800
+      optimal-temperature: 0.60
+      temperature-tolerance: 0.60
+      optimal-humidity: 0.75
+      humidity-tolerance: 0.45
+      min-light: 9
+      preferred-seasons: [SPRING, SUMMER]
+
+  # CraftEngine 自定义植物/作物（按自定义方块 ID 注册）
+  # - id 形如：namespace:value（例如 my_pack:tomato_crop）
+  # - age-property 可选：默认会自动尝试 age / stage / growth
+  craftengine:
+    "cgap:tea_tree_crop":
+      enabled: true
+      stages: 6
+      # 茶树：偏温暖、偏湿润，生长偏慢（用于更接近“树苗/多年生作物”的体感）
+      base-ticks-per-stage: 2800
+      optimal-temperature: 1.20
+      temperature-tolerance: 0.80
+      optimal-humidity: 0.80
+      humidity-tolerance: 0.60
+      min-light: 9
+      preferred-seasons: [SPRING, SUMMER, AUTUMN]
+      age-property: age
 

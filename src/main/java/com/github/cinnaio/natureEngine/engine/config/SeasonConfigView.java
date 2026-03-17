@@ -26,6 +26,18 @@ public final class SeasonConfigView {
         return new SeasonSettings(lengthInDays, baseTemp, baseHumidity, growthMultiplier, yieldMultiplier, easyToWither);
     }
 
+    /** vanilla 标尺环境温度增量（建议范围约 -0.25 ~ +0.25）。 */
+    public double getTemperatureDelta(SeasonType type) {
+        String path = "seasons." + type.name().toLowerCase();
+        return config.getDouble(path + ".temperature-delta", 0.0);
+    }
+
+    /** 环境湿度增量（0..1），建议范围约 -0.10 ~ +0.10。 */
+    public double getHumidityDelta(SeasonType type) {
+        String path = "seasons." + type.name().toLowerCase();
+        return config.getDouble(path + ".humidity-delta", 0.0);
+    }
+
     public boolean isNotifyEnabled() {
         return config.getBoolean("seasons.notify.enabled", true);
     }

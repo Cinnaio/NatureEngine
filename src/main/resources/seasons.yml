@@ -10,6 +10,9 @@ seasons:
     length-days: 10
     base-temperature: 15.0
     base-humidity: 0.7
+    # vanilla 标尺环境增量（基于 World#getTemperature/#getHumidity）
+    temperature-delta: 0.05
+    humidity-delta: 0.05
     growth-multiplier: 1.2
     yield-multiplier: 1.0
     easy-to-wither: false
@@ -18,6 +21,8 @@ seasons:
     length-days: 10
     base-temperature: 25.0
     base-humidity: 0.5
+    temperature-delta: 0.20
+    humidity-delta: -0.05
     growth-multiplier: 1.1
     yield-multiplier: 1.1
     easy-to-wither: false
@@ -26,6 +31,8 @@ seasons:
     length-days: 10
     base-temperature: 10.0
     base-humidity: 0.6
+    temperature-delta: 0.00
+    humidity-delta: 0.00
     growth-multiplier: 1.0
     yield-multiplier: 1.2
     easy-to-wither: false
@@ -34,6 +41,8 @@ seasons:
     length-days: 10
     base-temperature: 0.0
     base-humidity: 0.4
+    temperature-delta: -0.20
+    humidity-delta: -0.05
     growth-multiplier: 0.5
     yield-multiplier: 0.8
     easy-to-wither: true
