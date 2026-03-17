@@ -21,10 +21,13 @@ import com.github.cinnaio.natureEngine.integration.customnameplates.CustomNamepl
 import com.github.cinnaio.natureEngine.integration.placeholderapi.NatureEngineExpansion;
 import com.github.cinnaio.natureEngine.integration.protocollib.ProtocolLibHook;
 import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.command.CommandMap;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.command.ConsoleCommandSender;
 
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 /**
  * 负责插件生命周期内各核心模块的启动与关闭。
@@ -140,6 +143,8 @@ public final class LifecycleManager {
         // 自动跟随：按间隔检测玩家移动并入队刷新，使“走到哪视觉跟到哪”
         long followInterval = configManager.getVisualConfig().getAutoFollowIntervalTicks();
         globalScheduler.runTaskTimer(packetSeasonVisualizer::tickAutoFollow, followInterval, followInterval);
+
+        logStartupSummary(i18n);
     }
 
     public void onDisable() {
@@ -167,6 +172,76 @@ public final class LifecycleManager {
             commandMap.register("natureengine", neCommand);
         } catch (Exception e) {
             plugin.getLogger().warning("无法注册 /ne 命令: " + e.getMessage());
+        }
+    }
+
+    private void logStartupSummary(I18n i18n) {
+        String ver = plugin.getDescription().getVersion();
+        String serverName = Bukkit.getName();
+        String bukkitVer = Bukkit.getBukkitVersion();
+        String mcVer = Bukkit.getMinecraftVersion();
+        boolean folia = isFoliaLike();
+
+        ConsoleCommandSender console = Bukkit.getConsoleSender();
+        int rts = configManager != null ? configManager.getGrowthConfig().getRandomTickSpeed() : 3;
+        boolean cropsEnabled = configManager != null && configManager.getCropConfig() != null && configManager.getCropConfig().isGlobalEnabled();
+
+        // 直接发到控制台（无 [INFO]/[NatureEngine] 前缀），更像 TrChat 的风格
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(""));
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
+                "&7Loading &bNatureEngine &fv" + ver + " &8(&7MC: &f" + mcVer + "&8)"
+        ));
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(""));
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
+                "&8&7Server &8: &f" + serverName + " &8(&7" + bukkitVer + "&8)"
+        ));
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
+                "&8&7FoliaLike &8: &f" + folia
+        ));
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
+                "&8&7Config &8: &frts=" + rts + " &8  &7crops.enabled&8=&f" + cropsEnabled
+        ));
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse("&8&7Hooks"));
+
+        logHook(console, "ProtocolLib", Optional.ofNullable(protocolLibHook).map(h -> h.getProtocolLib()).orElse(null));
+        logHook(console, "CraftEngine", Bukkit.getPluginManager().getPlugin("CraftEngine"));
+        logHook(console, "PlaceholderAPI", Bukkit.getPluginManager().getPlugin("PlaceholderAPI"));
+        logHook(console, "CustomNameplates", Bukkit.getPluginManager().getPlugin("CustomNameplates"));
+
+        boolean papiExpansion = placeholderExpansion != null;
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
+                "&8&7PAPI Expansion &8: " + (papiExpansion ? "&aregistered" : "&cnot registered")
+        ));
+    }
+
+    private void logHook(ConsoleCommandSender console, String name, Plugin p) {
+        if (p == null) {
+            console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
+                    "&8  &7" + padRight(name, 14) + " &8: &cnot installed"
+            ));
+            return;
+        }
+        String v = (p.getDescription() != null) ? p.getDescription().getVersion() : "?";
+        String color = p.isEnabled() ? "&a" : "&c";
+        String status = "&fv" + v + " &8(enabled=" + color + p.isEnabled() + "&8)";
+        console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
+                "&8  &7" + padRight(name, 14) + " &8: " + status
+        ));
+    }
+
+    private static String padRight(String s, int len) {
+        if (s == null) s = "";
+        if (s.length() >= len) return s;
+        return s + " ".repeat(len - s.length());
+    }
+
+    private static boolean isFoliaLike() {
+        try {
+            // Paper/Folia API: exists on Folia and most folia-like forks
+            Bukkit.getRegionScheduler();
+            return true;
+        } catch (Throwable ignored) {
+            return false;
         }
     }
 }

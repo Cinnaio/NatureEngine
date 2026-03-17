@@ -91,7 +91,6 @@ public final class ProtocolBiomeListener {
         };
 
         protocolManager.addPacketListener(adapter);
-        plugin.getLogger().info("[NatureEngine] ProtocolLib chunk biome listener enabled.");
     }
 
     private PacketType[] chunkPacketTypes() {
