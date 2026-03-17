@@ -25,5 +25,18 @@ public final class SeasonConfigView {
         boolean easyToWither = config.getBoolean(path + ".easy-to-wither", false);
         return new SeasonSettings(lengthInDays, baseTemp, baseHumidity, growthMultiplier, yieldMultiplier, easyToWither);
     }
+
+    public boolean isNotifyEnabled() {
+        return config.getBoolean("seasons.notify.enabled", true);
+    }
+
+    /** actionbar | chat | both */
+    public String getNotifyMode() {
+        return config.getString("seasons.notify.mode", "actionbar");
+    }
+
+    public String getNotifyMessageTemplate() {
+        return config.getString("seasons.notify.message", "&a季节已切换为 &e{season}");
+    }
 }
 

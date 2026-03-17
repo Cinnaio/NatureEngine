@@ -29,6 +29,7 @@ public final class Text {
 
     private static final Pattern LEGACY_HEX = Pattern.compile("(?i)&?#([0-9a-f]{6})");
     private static final Pattern MM_COLOR_TAG = Pattern.compile("(?i)<color:#([0-9a-f]{6})>");
+    private static final Pattern MM_COLOR_CLOSE = Pattern.compile("(?i)</color>");
 
     private Text() {}
 
@@ -41,9 +42,10 @@ public final class Text {
                 String mm = input;
                 // 兼容用户写法：<color:#RRGGBB>
                 mm = normalizeMiniMessageColor(mm);
-                // 允许只写开标签：例如 "<red>文本"、"<#ffcc00>文本"
-                // 若没有任何闭合标签，则在末尾补一个通用关闭 "</>"（重置样式）
-                if (!mm.contains("</")) {
+                // 允许只写开标签：例如 "<red>文本"、"<#ffcc00>文本"、"<color:#ffcc00>文本"
+                // 这里统一在末尾补一个 "</>" 作为样式重置，避免“漏色”影响后续文本。
+                // 如果用户写了闭合标签也不会受影响，"</>" 只是额外 reset。
+                if (!mm.endsWith("</>")) {
                     mm = mm + "</>";
                 }
                 return MINI.deserialize(mm);
@@ -76,6 +78,7 @@ public final class Text {
 
     private static String normalizeMiniMessageColor(String s) {
         // 把 <color:#RRGGBB> 转成 MiniMessage 原生的 <#RRGGBB>
+        // 同时保留 </color>（允许用户写，也不会报错/影响结果）
         Matcher m = MM_COLOR_TAG.matcher(s);
         StringBuffer sb = new StringBuffer();
         while (m.find()) {
@@ -83,7 +86,8 @@ public final class Text {
             m.appendReplacement(sb, Matcher.quoteReplacement("<#" + hex + ">"));
         }
         m.appendTail(sb);
-        return sb.toString();
+        // 关闭标签兼容：把 </color> 变成通用 reset </>（因为我们把 opening 转成了 <#...>）
+        return MM_COLOR_CLOSE.matcher(sb.toString()).replaceAll("</>");
     }
 
     private static String toSectionX(String hex6) {

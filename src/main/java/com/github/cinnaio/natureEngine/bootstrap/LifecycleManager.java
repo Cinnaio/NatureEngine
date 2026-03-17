@@ -6,6 +6,7 @@ import com.github.cinnaio.natureEngine.core.agriculture.crop.CropRegistry;
 import com.github.cinnaio.natureEngine.core.agriculture.crop.listener.VanillaCropListener;
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthCalculator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
+import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonNotifier;
 import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherController;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
@@ -56,6 +57,7 @@ public final class LifecycleManager {
 
         // 核心农业环境相关服务
         this.seasonManager = new SeasonManager(configManager.getSeasonConfig());
+        serviceLocator.register(SeasonNotifier.class, new SeasonNotifier(configManager.getSeasonConfig()));
         // 强制依赖 ProtocolLib（发包视觉层）
         this.protocolLibHook = new ProtocolLibHook(plugin);
         WeatherController weatherController = new WeatherController(configManager.getWeatherConfig());

@@ -5,6 +5,7 @@ import com.github.cinnaio.natureEngine.api.SeasonAPI;
 import com.github.cinnaio.natureEngine.api.WeatherAPI;
 import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
+import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonNotifier;
 import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
 import com.github.cinnaio.natureEngine.engine.text.Text;
@@ -149,6 +150,8 @@ public final class NeRootCommand extends Command {
         }
         SeasonAPI.setSeasonOverride(world, next);
         player.sendMessage("§a已将当前世界季节设置为: " + next + "（手动覆盖）");
+        SeasonNotifier notifier = SERVICES.get(SeasonNotifier.class);
+        if (notifier != null) notifier.notifySeasonChanged(world, next);
         PacketSeasonVisualizer visualizer = SERVICES.get(PacketSeasonVisualizer.class);
         if (visualizer != null) {
             visualizer.enqueueApply(player);
@@ -183,6 +186,8 @@ public final class NeRootCommand extends Command {
         }
         SeasonAPI.setSeasonOverride(world, target);
         player.sendMessage("§a已将当前世界季节设置为: " + target + "（手动覆盖）");
+        SeasonNotifier notifier = SERVICES.get(SeasonNotifier.class);
+        if (notifier != null) notifier.notifySeasonChanged(world, target);
         PacketSeasonVisualizer visualizer = SERVICES.get(PacketSeasonVisualizer.class);
         if (visualizer != null) {
             visualizer.enqueueApply(player);
@@ -192,8 +197,10 @@ public final class NeRootCommand extends Command {
 
     private boolean handleSeasonClear(Player player, World world) {
         SeasonAPI.clearSeasonOverride(world);
-        player.sendMessage("§a已清除当前世界的季节覆盖，恢复自然季节推进。");
-        player.sendMessage("§7提示：发包视觉会在区块重新发送时自然恢复。");
+        player.sendMessage(Text.parse("&a已清除当前世界的季节覆盖，恢复自然季节推进。"));
+        player.sendMessage(Text.parse("&7提示：发包视觉会在区块重新发送时自然恢复。"));
+        SeasonNotifier notifier = SERVICES.get(SeasonNotifier.class);
+        if (notifier != null) notifier.notifySeasonChanged(world, SeasonAPI.getCurrentSeason(world));
         return true;
     }
 
