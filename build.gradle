@@ -60,32 +60,6 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
-tasks.register('deployToSurvival', Copy) {
-
-    dependsOn jar
-
-    def pluginsDir = file("E:/Database/Minecraft/Server/survival_20260120_1444/plugins")
-    def deleteDir = file("${pluginsDir}/NatureEngine")
-
-    doFirst {
-        if (deleteDir.exists()) {
-            println "Deleting ${deleteDir}"
-            deleteDir.deleteDir()
-        }
-    }
-
-    from(tasks.jar)
-
-    into(pluginsDir)
-
-    rename {
-        "${project.name}.jar"
-    }
-
-}
-
-build.finalizedBy(deployToSurvival)
-
 processResources {
     def props = [version: version]
     inputs.properties props
