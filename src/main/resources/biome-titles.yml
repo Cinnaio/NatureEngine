@@ -2,7 +2,7 @@ biome-titles:
   enabled: true
 
   # 冷却（tick）。在 Biome 边界抖动时，避免反复弹出 Title
-  cooldown-ticks: 80
+  cooldown-ticks: 200
 
   # 指定生效世界（为空则所有世界）
   worlds: ["world"]
@@ -16,18 +16,63 @@ biome-titles:
   groups:
     - id: plains
       title: "&7欢迎来到 &f平原地带"
-      match: ["minecraft:plains", "minecraft:sunflower_plains", "*plains*"]
+      match: ["*plains*", "*prairie*", "*steppe*", "*meadow*", "*grassland*"]
+
     - id: forest
       title: "&7欢迎来到 &f森林地带"
-      match: ["*forest*", "*woods*"]
+      match: ["*forest*", "*woods*", "*grove*", "*orchard*"]
+
+    - id: taiga
+      title: "&7欢迎来到 &f针叶林地带"
+      match: ["*taiga*", "*boreal*", "*conifer*", "*pine*", "*spruce*"]
+
+    - id: jungle
+      title: "&7欢迎来到 &f热带雨林"
+      match: ["*jungle*", "*rainforest*", "*tropical*", "*bamboo*"]
+
+    - id: desert
+      title: "&7欢迎来到 &f荒漠地带"
+      match: ["*desert*", "*dune*", "*oasis*", "*arid*"]
+
+    - id: savanna
+      title: "&7欢迎来到 &f热带草原"
+      match: ["*savanna*", "*scrub*", "*dry_*", "*drylands*"]
+
+    - id: swamp
+      title: "&7欢迎来到 &f湿地沼泽"
+      match: ["*swamp*", "*marsh*", "*mangrove*", "*bayou*"]
+
+    - id: snowy
+      title: "&7欢迎来到 &f雪原寒地"
+      match: ["*snow*", "*ice*", "*frozen*", "*tundra*", "*glacier*"]
+
+    - id: mountains
+      title: "&7欢迎来到 &f山地高原"
+      match: ["*mountain*", "*peak*", "*cliff*", "*alps*", "*highlands*", "*ridge*"]
+
+    - id: ocean_coast
+      title: "&7欢迎来到 &f海岸与海洋"
+      match: ["*ocean*", "*coast*", "*beach*", "*shore*", "*reef*", "*island*"]
+
+    - id: river_lake
+      title: "&7欢迎来到 &f河流湖泊"
+      match: ["*river*", "*lake*", "*delta*", "*lagoon*"]
+
+    - id: badlands_canyon
+      title: "&7欢迎来到 &f峡谷恶地"
+      match: ["*badlands*", "*canyon*", "*mesa*", "*gorge*", "*ravine*"]
+
+    - id: cave
+      title: "&7欢迎来到 &f地下洞穴"
+      match: ["*cave*", "*underground*", "minecraft:deep_dark", "minecraft:lush_caves", "minecraft:dripstone_caves"]
 
   # Biome -> Title 文本（支持 & 颜色码 / MiniMessage）
   # 当 biome 未命中任何 group 时，会回退到这里
   titles:
-    PLAINS: "&7欢迎来到 &f平原"
-    FOREST: "&7欢迎来到 &f森林"
-    TAIGA: "&7欢迎来到 &f针叶林"
-    DESERT: "&7欢迎来到 &f沙漠"
-    JUNGLE: "&7欢迎来到 &f丛林"
-    SWAMP: "&7欢迎来到 &f沼泽"
-    SNOWY_PLAINS: "&7欢迎来到 &f雪原"
+    minecraft:plains: "&7欢迎来到 &f平原"
+    minecraft:forest: "&7欢迎来到 &f森林"
+    minecraft:taiga: "&7欢迎来到 &f针叶林"
+    minecraft:desert: "&7欢迎来到 &f沙漠"
+    minecraft:jungle: "&7欢迎来到 &f丛林"
+    minecraft:swamp: "&7欢迎来到 &f沼泽"
+    minecraft:snowy_plains: "&7欢迎来到 &f雪原"
