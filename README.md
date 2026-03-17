@@ -6,9 +6,7 @@
   </sub>
 </p>
 
-<hr />
-
-### 构建
+## 构建
 
 需要 **JDK 21**：
 
@@ -22,24 +20,18 @@ Windows:
 gradlew.bat
 ```
 
-<hr />
-
-### API（给开发者）
+## API（给开发者）
 
 - `SeasonAPI`：`com.github.cinnaio.natureEngine.api.SeasonAPI`
 - `WeatherAPI`：`com.github.cinnaio.natureEngine.api.WeatherAPI`
 - `CropAPI`：`com.github.cinnaio.natureEngine.api.CropAPI`
 
-<hr />
-
-### 贡献与致谢
+## 贡献与致谢
 
 欢迎 Issue / PR。  
 致谢：Paper/Folia、ProtocolLib、PlaceholderAPI、CraftEngine、Kyori Adventure/MiniMessage。
 
-<hr />
-
-### License
+## License
 
 见 `LICENSE`。
 
