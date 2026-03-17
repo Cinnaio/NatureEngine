@@ -20,5 +20,12 @@ public final class GrowthConfigView {
     public double getWitherThreshold() {
         return config.getDouble("growth.wither-threshold", 0.1);
     }
+
+    /**
+     * 插件内部 randomTickSpeed（默认 3，与原版 gamerule 默认一致）。
+     */
+    public int getRandomTickSpeed() {
+        return Math.max(0, config.getInt("growth.random-tick-speed", 3));
+    }
 }
 

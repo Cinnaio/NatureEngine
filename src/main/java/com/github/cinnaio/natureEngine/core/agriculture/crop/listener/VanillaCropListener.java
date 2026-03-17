@@ -9,6 +9,7 @@ import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentManager;
+import com.github.cinnaio.natureEngine.core.agriculture.crop.vanilla.VanillaCropController;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
@@ -55,34 +56,10 @@ public final class VanillaCropListener implements Listener {
         // 该方块已被 NatureEngine 接管：阻止原版写入生长结果
         event.setCancelled(true);
 
-        Ageable ageable = (Ageable) block.getBlockData();
-        int currentAge = ageable.getAge();
-
-        EnvironmentContext envContext = environmentManager.getContext(block);
-
-        GrowthContext context = new GrowthContext(
-                loc,
-                cropOpt.get(),
-                currentAge,
-                seasonManager.getCurrentSeason(block.getWorld()),
-                seasonManager.getSeasonProgress(block.getWorld()),
-                weatherManager.getCurrentWeather(block.getWorld()),
-                envContext
-        );
-
-        GrowthResult result = cropManager.calculateGrowth(context);
-
-        if (result.isShouldWither()) {
-            // 简化：直接将年龄设为 0 表示枯萎，后续可换成特定方块
-            ageable.setAge(0);
-            block.setBlockData(ageable, false);
-            return;
-        }
-
-        if (result.getStageDelta() > 0) {
-            int newAge = Math.min(ageable.getMaximumAge(), currentAge + result.getStageDelta());
-            ageable.setAge(newAge);
-            block.setBlockData(ageable, false);
+        // 自然生长推进交由 VanillaCropController 主动 tick（独立于世界 randomTickSpeed）
+        VanillaCropController controller = services.get(VanillaCropController.class);
+        if (controller != null) {
+            controller.track(block);
         }
     }
 
@@ -104,6 +81,11 @@ public final class VanillaCropListener implements Listener {
 
         // 该方块已被 NatureEngine 接管：阻止骨粉原版逻辑直接推进
         event.setCancelled(true);
+
+        VanillaCropController controller = services.get(VanillaCropController.class);
+        if (controller != null) {
+            controller.track(block);
+        }
 
         Ageable ageable = (Ageable) block.getBlockData();
         int currentAge = ageable.getAge();

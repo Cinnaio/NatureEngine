@@ -4,6 +4,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
+import java.io.IOException;
 import java.io.File;
 
 /**
@@ -136,6 +137,26 @@ public final class ConfigManager {
 
     public void saveIfNeeded() {
         // 当前主配置只读，如有运行时修改可在此控制保存策略
+    }
+
+    /**
+     * 运行时修改并保存 growth.yml 的插件 randomTickSpeed。
+     */
+    public boolean setPluginRandomTickSpeed(int value) {
+        if (growthCfg == null) return false;
+        int v = Math.max(0, value);
+        growthCfg.set("growth.random-tick-speed", v);
+        if (growthCfg instanceof YamlConfiguration yml) {
+            try {
+                File target = new File(plugin.getDataFolder(), "growth.yml");
+                yml.save(target);
+                return true;
+            } catch (IOException e) {
+                plugin.getLogger().warning("[NatureEngine] save growth.yml failed: " + e.getMessage());
+                return false;
+            }
+        }
+        return false;
     }
 }
 

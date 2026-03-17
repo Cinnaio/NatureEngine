@@ -23,6 +23,10 @@ lang:
       help-season-clear: "<color:#A9B3C3>- <color:#FFE2A9>/ne season clear <color:#A9B3C3>清除手动季节覆盖"
       help-season-apply: "<color:#A9B3C3>- <color:#FFE2A9>/ne season apply <color:#A9B3C3>重新应用当前季节视觉效果"
       help-reload: "<color:#A9B3C3>- <color:#FFE2A9>/ne reload <...> <color:#A9B3C3>重载配置模块"
+      crop-usage: "<color:#B8C7FF>用法: <color:#FFE2A9>/ne crop randomTickSpeed [值]"
+      crop-rts-get: "<color:#A9B3C3>插件 randomTickSpeed = <color:#FFE2A9>{value}"
+      crop-rts-set: "<color:#A9B3C3>插件 randomTickSpeed 已设置为 <color:#FFE2A9>{value}"
+      crop-rts-invalid: "<color:#FFB4B4>请输入整数，例如: <color:#FFE2A9>/ne crop randomTickSpeed 3"
 
   season:
     display:

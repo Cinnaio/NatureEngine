@@ -5,3 +5,7 @@ growth:
   # 判定为枯萎所需的综合因子阈值 (0-1)
   wither-threshold: 0.02
 
+  # 插件内部 randomTickSpeed（独立于 /gamerule randomTickSpeed）
+  # - 默认 3 与原版默认 gamerule 一致
+  random-tick-speed: 3
+

@@ -147,6 +147,10 @@ public final class CraftEngineCropController implements Listener, CraftEngineTra
         CropType crop = cropOpt.get();
         // 概率控制：根据 baseTicksPerStage 粗略换算每秒尝试概率
         double p = Math.min(1.0, 20.0 / Math.max(20.0, crop.getBaseTicksPerStage()));
+        // 插件内部 randomTickSpeed：与原版默认 3 对齐（3 表示不缩放）
+        int pluginRts = configManager.getGrowthConfig().getRandomTickSpeed();
+        double scale = pluginRts <= 0 ? 0.0 : (double) pluginRts / 3.0;
+        p = Math.min(1.0, p * scale);
         if (random.nextDouble() > p) return;
 
         try {

@@ -4,6 +4,7 @@ import com.github.cinnaio.natureEngine.command.NeRootCommand;
 import com.github.cinnaio.natureEngine.core.agriculture.crop.CropManager;
 import com.github.cinnaio.natureEngine.core.agriculture.crop.CropRegistry;
 import com.github.cinnaio.natureEngine.core.agriculture.crop.listener.VanillaCropListener;
+import com.github.cinnaio.natureEngine.core.agriculture.crop.vanilla.VanillaCropController;
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthCalculator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonNotifier;
@@ -39,6 +40,7 @@ public final class LifecycleManager {
     private WeatherManager weatherManager;
     private EnvironmentManager environmentManager;
     private CropManager cropManager;
+    private VanillaCropController vanillaCropController;
     private CraftEngineHook craftEngineHook;
     private CraftEngineCropController craftEngineCropController;
     private CustomNameplatesHook customNameplatesHook;
@@ -97,6 +99,17 @@ public final class LifecycleManager {
 
         // 注册原版作物监听
         Bukkit.getPluginManager().registerEvents(new VanillaCropListener(), plugin);
+        vanillaCropController = new VanillaCropController(
+                plugin,
+                configManager,
+                globalScheduler,
+                seasonManager,
+                weatherManager,
+                environmentManager,
+                cropManager
+        );
+        vanillaCropController.start();
+        serviceLocator.register(VanillaCropController.class, vanillaCropController);
 
         // CraftEngine 植物接管（软依赖）
         if (craftEngineHook.isPresent()) {

@@ -26,6 +26,9 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Locale;
 
@@ -42,6 +45,19 @@ public final class NeRootCommand extends Command {
 
     @Override
     public boolean execute(CommandSender sender, String label, String[] args) {
+        // 权限策略：所有 /ne 子命令默认仅 OP 可用
+        if (!sender.isOp()) {
+            if (sender instanceof Player p) {
+                I18n i18n = SERVICES.get(I18n.class);
+                if (i18n != null) {
+                    sender.sendMessage(i18n.tr(p, "common.no-permission"));
+                    return true;
+                }
+            }
+            sender.sendMessage(Text.parse("<color:#FFB4B4>你没有权限执行该命令。</>"));
+            return true;
+        }
+
         if (args.length == 0) {
             sendHelp(sender);
             return true;
@@ -60,9 +76,155 @@ public final class NeRootCommand extends Command {
         if ("sim".equals(sub)) {
             return handleSim(sender, Arrays.copyOfRange(args, 1, args.length));
         }
+        if ("crop".equals(sub)) {
+            return handleCrop(sender, Arrays.copyOfRange(args, 1, args.length));
+        }
 
         sendHelp(sender);
         return true;
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender sender, String alias, String[] args, Location location) throws IllegalArgumentException {
+        if (!sender.isOp()) return Collections.emptyList();
+        if (args == null) return Collections.emptyList();
+        if (args.length == 0) return Collections.emptyList();
+
+        String a0 = args[0] == null ? "" : args[0].toLowerCase(Locale.ROOT);
+        if (args.length == 1) {
+            List<String> root = new ArrayList<>();
+            root.add("debug");
+            root.add("sim");
+            root.add("season");
+            root.add("reload");
+            root.add("crop");
+            return filterPrefix(root, a0);
+        }
+
+        // 子命令补全
+        switch (a0) {
+            case "debug" -> {
+                if (args.length == 2) {
+                    return filterPrefix(List.of("crop"), lower(args[1]));
+                }
+            }
+            case "sim" -> {
+                if (args.length == 2) {
+                    return filterPrefix(List.of("crop"), lower(args[1]));
+                }
+            }
+            case "season" -> {
+                if (args.length == 2) {
+                    List<String> subs = new ArrayList<>();
+                    subs.add("info");
+                    if (sender.isOp()) {
+                        subs.add("next");
+                        subs.add("set");
+                        subs.add("clear");
+                        subs.add("apply");
+                        subs.add("restore");
+                    }
+                    return filterPrefix(subs, lower(args[1]));
+                }
+                if (args.length == 3 && sender.isOp() && "set".equalsIgnoreCase(args[1])) {
+                    List<String> seasons = new ArrayList<>();
+                    for (SeasonType t : SeasonType.values()) seasons.add(t.name());
+                    return filterPrefix(seasons, lower(args[2]));
+                }
+            }
+            case "reload" -> {
+                if (args.length == 2) {
+                    return filterPrefix(List.of("all", "seasons", "growth", "debug", "weather", "visual", "crops"), lower(args[1]));
+                }
+            }
+            case "crop" -> {
+                if (args.length == 2) {
+                    return filterPrefix(List.of("randomTickSpeed"), lower(args[1]));
+                }
+                if (args.length == 3 && "randomtickspeed".equalsIgnoreCase(args[1])) {
+                    // 常用档位：0=禁用自然生长触发；3=默认；更大=更快
+                    return filterPrefix(List.of("0", "1", "3", "10", "30", "100"), lower(args[2]));
+                }
+            }
+            default -> {
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private boolean handleCrop(CommandSender sender, String[] args) {
+        I18n i18n = (sender instanceof Player p) ? SERVICES.get(I18n.class) : null;
+        if (args == null || args.length == 0) {
+            if (sender instanceof Player p && i18n != null) {
+                sender.sendMessage(i18n.tr(p, "command.ne.crop-usage"));
+            } else {
+                sender.sendMessage(Text.parse("<color:#B8C7FF>用法: /ne crop randomTickSpeed [值]</>"));
+            }
+            return true;
+        }
+        if (!"randomtickspeed".equalsIgnoreCase(args[0])) {
+            if (sender instanceof Player p && i18n != null) {
+                sender.sendMessage(i18n.tr(p, "command.ne.crop-usage"));
+            } else {
+                sender.sendMessage(Text.parse("<color:#B8C7FF>用法: /ne crop randomTickSpeed [值]</>"));
+            }
+            return true;
+        }
+        ConfigManager cm = SERVICES.get(ConfigManager.class);
+        if (cm == null) {
+            sender.sendMessage(Text.parse("<color:#FFB4B4>ConfigManager 未初始化。</>"));
+            return true;
+        }
+
+        int current = cm.getGrowthConfig().getRandomTickSpeed();
+        if (args.length == 1) {
+            if (sender instanceof Player p && i18n != null) {
+                sender.sendMessage(i18n.tr(p, "command.ne.crop-rts-get", Map.of("value", String.valueOf(current))));
+            } else {
+                sender.sendMessage(Text.parse("<color:#B8C7FF>[NatureEngine] 插件 randomTickSpeed = <color:#FFFFFF>" + current + "</></>"));
+            }
+            return true;
+        }
+
+        int v;
+        try {
+            v = Integer.parseInt(args[1]);
+        } catch (NumberFormatException e) {
+            if (sender instanceof Player p && i18n != null) {
+                sender.sendMessage(i18n.tr(p, "command.ne.crop-rts-invalid"));
+            } else {
+                sender.sendMessage(Text.parse("<color:#FFB4B4>请输入整数，例如: /ne crop randomTickSpeed 3</>"));
+            }
+            return true;
+        }
+        v = Math.max(0, v);
+        boolean ok = cm.setPluginRandomTickSpeed(v);
+        if (ok) {
+            if (sender instanceof Player p && i18n != null) {
+                sender.sendMessage(i18n.tr(p, "command.ne.crop-rts-set", Map.of("value", String.valueOf(v))));
+            } else {
+                sender.sendMessage(Text.parse("<color:#B8C7FF>[NatureEngine] 插件 randomTickSpeed 已设置为 <color:#FFFFFF>" + v + "</></>"));
+            }
+        } else {
+            sender.sendMessage(Text.parse("<color:#FFB4B4>设置失败：无法保存 growth.yml。</>"));
+        }
+        return true;
+    }
+
+    private static String lower(String s) {
+        return s == null ? "" : s.toLowerCase(Locale.ROOT);
+    }
+
+    private static List<String> filterPrefix(List<String> options, String prefixLower) {
+        if (options == null || options.isEmpty()) return Collections.emptyList();
+        if (prefixLower == null) prefixLower = "";
+        if (prefixLower.isEmpty()) return options;
+        List<String> out = new ArrayList<>();
+        for (String o : options) {
+            if (o == null) continue;
+            if (o.toLowerCase(Locale.ROOT).startsWith(prefixLower)) out.add(o);
+        }
+        return out;
     }
 
     private void sendHelp(CommandSender sender) {
