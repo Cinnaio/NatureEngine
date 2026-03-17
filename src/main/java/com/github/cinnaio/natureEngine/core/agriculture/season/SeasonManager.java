@@ -43,6 +43,33 @@ public final class SeasonManager implements SeasonCycle.SeasonSettingsProvider {
         return seasonCycle.getSeasonForWorld(world, worldDay).getProgress();
     }
 
+    /** 当前季节将持续的天数（来自配置）。 */
+    public long getCurrentSeasonLengthDays(World world) {
+        return configView.getSettings(getCurrentSeason(world)).getLengthInDays();
+    }
+
+    /** 下一季节类型。 */
+    public SeasonType getNextSeasonType(World world) {
+        return getNextSeasonType(getCurrentSeason(world));
+    }
+
+    private static SeasonType getNextSeasonType(SeasonType current) {
+        return switch (current) {
+            case SPRING -> SeasonType.SUMMER;
+            case SUMMER -> SeasonType.AUTUMN;
+            case AUTUMN -> SeasonType.WINTER;
+            case WINTER -> SeasonType.SPRING;
+        };
+    }
+
+    /** 距离下一季节的天数（含小数，向上取整为整天）。 */
+    public long getDaysUntilNextSeason(World world) {
+        double progress = getSeasonProgress(world);
+        long length = getCurrentSeasonLengthDays(world);
+        double remaining = (1.0 - progress) * length;
+        return Math.max(1, (long) Math.ceil(remaining));
+    }
+
     public void setSeasonOverride(World world, SeasonType type) {
         overrides.put(world.getUID(), type);
     }

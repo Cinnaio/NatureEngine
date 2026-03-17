@@ -31,5 +31,17 @@ public final class SeasonAPI {
     public static boolean hasOverride(World world) {
         return SERVICES.get(SeasonManager.class).hasOverride(world);
     }
+
+    public static long getCurrentSeasonLengthDays(World world) {
+        return SERVICES.get(SeasonManager.class).getCurrentSeasonLengthDays(world);
+    }
+
+    public static SeasonType getNextSeasonType(World world) {
+        return SERVICES.get(SeasonManager.class).getNextSeasonType(world);
+    }
+
+    public static long getDaysUntilNextSeason(World world) {
+        return SERVICES.get(SeasonManager.class).getDaysUntilNextSeason(world);
+    }
 }
 

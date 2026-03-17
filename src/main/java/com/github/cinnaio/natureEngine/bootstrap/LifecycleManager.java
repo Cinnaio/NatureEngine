@@ -15,6 +15,7 @@ import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.scheduler.GlobalScheduler;
 import com.github.cinnaio.natureEngine.engine.text.I18n;
 import com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineHook;
+import com.github.cinnaio.natureEngine.integration.customnameplates.CustomNameplatesHook;
 import com.github.cinnaio.natureEngine.integration.placeholderapi.NatureEngineExpansion;
 import com.github.cinnaio.natureEngine.integration.protocollib.ProtocolLibHook;
 import org.bukkit.Bukkit;
@@ -38,6 +39,7 @@ public final class LifecycleManager {
     private EnvironmentManager environmentManager;
     private CropManager cropManager;
     private CraftEngineHook craftEngineHook;
+    private CustomNameplatesHook customNameplatesHook;
     private PacketSeasonVisualizer packetSeasonVisualizer;
     private ProtocolLibHook protocolLibHook;
     private NatureEngineExpansion placeholderExpansion;
@@ -65,7 +67,7 @@ public final class LifecycleManager {
 
         // 核心农业环境相关服务
         this.seasonManager = new SeasonManager(configManager.getSeasonConfig());
-        serviceLocator.register(SeasonNotifier.class, new SeasonNotifier(configManager.getSeasonConfig(), i18n));
+        serviceLocator.register(SeasonNotifier.class, new SeasonNotifier(seasonManager, configManager.getSeasonConfig(), i18n));
         // 强制依赖 ProtocolLib（发包视觉层）
         this.protocolLibHook = new ProtocolLibHook(plugin);
         WeatherController weatherController = new WeatherController(configManager.getWeatherConfig());
@@ -77,6 +79,7 @@ public final class LifecycleManager {
         GrowthCalculator growthCalculator = new GrowthCalculator(configManager.getGrowthConfig(), configManager.getWeatherConfig());
         this.cropManager = new CropManager(cropRegistry, growthCalculator);
         this.craftEngineHook = new CraftEngineHook(plugin);
+        this.customNameplatesHook = new CustomNameplatesHook(plugin);
         this.packetSeasonVisualizer = new PacketSeasonVisualizer(plugin, seasonManager, configManager.getVisualConfig(), i18n);
 
         serviceLocator.register(SeasonManager.class, seasonManager);
@@ -84,6 +87,7 @@ public final class LifecycleManager {
         serviceLocator.register(EnvironmentManager.class, environmentManager);
         serviceLocator.register(CropManager.class, cropManager);
         serviceLocator.register(CraftEngineHook.class, craftEngineHook);
+        serviceLocator.register(CustomNameplatesHook.class, customNameplatesHook);
         serviceLocator.register(PacketSeasonVisualizer.class, packetSeasonVisualizer);
         serviceLocator.register(ProtocolLibHook.class, protocolLibHook);
 

@@ -26,6 +26,10 @@ import java.util.Locale;
  *   <li>%natureengine_weather% - 天气枚举名</li>
  *   <li>%natureengine_weather_display% - 本地化天气显示名</li>
  *   <li>%natureengine_season_progress% - 季节进度 0~100</li>
+ *   <li>%natureengine_days_until_next_season% - 距下一季节天数</li>
+ *   <li>%natureengine_next_season% - 下一季节枚举名</li>
+ *   <li>%natureengine_next_season_display% - 下一季节本地化名</li>
+ *   <li>%natureengine_season_duration% - 当前季节持续天数</li>
  *   <li>%natureengine_temperature% - 玩家所在位置温度</li>
  *   <li>%natureengine_humidity% - 湿度</li>
  *   <li>%natureengine_soil_moisture% - 土壤湿度</li>
@@ -75,7 +79,8 @@ public final class NatureEngineExpansion extends PlaceholderExpansion {
     private String resolveWithoutPlayer(String params) {
         return switch (params.toLowerCase(Locale.ROOT)) {
             case "season", "season_display", "weather", "weather_display",
-                 "season_progress", "temperature", "humidity", "soil_moisture", "light" -> "";
+                 "season_progress", "season_duration", "days_until_next_season",
+                 "next_season", "next_season_display", "temperature", "humidity", "soil_moisture", "light" -> "";
             default -> null;
         };
     }
@@ -92,6 +97,10 @@ public final class NatureEngineExpansion extends PlaceholderExpansion {
             case "weather" -> WeatherAPI.getCurrentWeather(world).name();
             case "weather_display" -> i18n.trRaw(localeCode, "weather.display." + WeatherAPI.getCurrentWeather(world).name().toLowerCase(Locale.ROOT));
             case "season_progress" -> String.format("%.1f", SeasonAPI.getSeasonProgress(world) * 100);
+            case "season_duration" -> String.valueOf(SeasonAPI.getCurrentSeasonLengthDays(world));
+            case "days_until_next_season" -> String.valueOf(SeasonAPI.getDaysUntilNextSeason(world));
+            case "next_season" -> SeasonAPI.getNextSeasonType(world).name();
+            case "next_season_display" -> i18n.trRaw(localeCode, "season.display." + SeasonAPI.getNextSeasonType(world).name().toLowerCase(Locale.ROOT));
             case "temperature" -> {
                 EnvironmentContext ctx = EnvironmentAPI.getContext(player.getLocation().getBlock());
                 yield String.format("%.1f", ctx.getTemperature());
@@ -125,6 +134,13 @@ public final class NatureEngineExpansion extends PlaceholderExpansion {
                 yield w.name().charAt(0) + w.name().substring(1).toLowerCase(Locale.ROOT);
             }
             case "season_progress" -> String.format("%.1f", SeasonAPI.getSeasonProgress(world) * 100);
+            case "season_duration" -> String.valueOf(SeasonAPI.getCurrentSeasonLengthDays(world));
+            case "days_until_next_season" -> String.valueOf(SeasonAPI.getDaysUntilNextSeason(world));
+            case "next_season" -> SeasonAPI.getNextSeasonType(world).name();
+            case "next_season_display" -> {
+                SeasonType next = SeasonAPI.getNextSeasonType(world);
+                yield next.name().charAt(0) + next.name().substring(1).toLowerCase(Locale.ROOT);
+            }
             case "temperature" -> {
                 EnvironmentContext ctx = EnvironmentAPI.getContext(player.getLocation().getBlock());
                 yield String.format("%.1f", ctx.getTemperature());
