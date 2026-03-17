@@ -42,6 +42,14 @@ lang:
     override-status-on: "<color:#FFB4B4>已覆盖"
     override-status-off: "<color:#B7F0C2>自然推进"
 
+  weather:
+    display:
+      sunny: "晴"
+      rain: "雨"
+      storm: "雷雨"
+      cloudy: "阴"
+      snow: "雪"
+
   debug:
     title: "<color:#B8C7FF>[NatureEngine Debug]"
     season-line: "<color:#A9B3C3>季节 <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"

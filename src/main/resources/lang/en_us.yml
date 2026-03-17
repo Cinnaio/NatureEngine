@@ -40,6 +40,14 @@ lang:
     override-status-on: "<color:#FFB4B4>On"
     override-status-off: "<color:#B7F0C2>Off"
 
+  weather:
+    display:
+      sunny: "Sunny"
+      rain: "Rain"
+      storm: "Storm"
+      cloudy: "Cloudy"
+      snow: "Snow"
+
   debug:
     title: "<color:#B8C7FF>[NatureEngine Debug]"
     season-line: "<color:#A9B3C3>Season <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"

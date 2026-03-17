@@ -12,6 +12,10 @@ repositories {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
     }
+    maven {
+        name = "placeholderapi"
+        url = "https://repo.helpch.at/releases"
+    }
 }
 
 dependencies {
@@ -20,6 +24,7 @@ dependencies {
     // MiniMessage（运行时由 Paper 自带 Adventure 提供；这里仅用于编译）
     compileOnly("net.kyori:adventure-text-minimessage:4.17.0")
     compileOnly("net.kyori:adventure-text-serializer-legacy:4.17.0")
+    compileOnly("me.clip:placeholderapi:2.11.6")
 }
 
 tasks {

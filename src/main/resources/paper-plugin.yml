@@ -15,3 +15,7 @@ dependencies:
       load: OMIT
       required: false
       join-classpath: true
+    PlaceholderAPI:
+      load: OMIT
+      required: false
+      join-classpath: true

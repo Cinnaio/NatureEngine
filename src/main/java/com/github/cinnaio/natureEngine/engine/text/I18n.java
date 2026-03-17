@@ -73,10 +73,15 @@ public final class I18n {
 
     /** 取原始字符串（不做 parse），带默认语言 fallback。 */
     public String trRaw(Player player, String key) {
-        return trRaw(detectCode(player), key);
+        return getLocalizedRaw(detectCode(player), key);
     }
 
-    private String trRaw(String code, String key) {
+    /** 按语言代码取原始字符串，供无玩家上下文（如 PAPI 离线）时使用。 */
+    public String trRaw(String localeCode, String key) {
+        return getLocalizedRaw(localeCode != null ? localeCode : defaultCode, key);
+    }
+
+    private String getLocalizedRaw(String code, String key) {
         String raw = getRaw(code, key);
         if (raw == null) raw = getRaw(defaultCode, key);
         if (raw == null) raw = key;

@@ -15,6 +15,7 @@ import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.scheduler.GlobalScheduler;
 import com.github.cinnaio.natureEngine.engine.text.I18n;
 import com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineHook;
+import com.github.cinnaio.natureEngine.integration.placeholderapi.NatureEngineExpansion;
 import com.github.cinnaio.natureEngine.integration.protocollib.ProtocolLibHook;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
@@ -39,6 +40,7 @@ public final class LifecycleManager {
     private CraftEngineHook craftEngineHook;
     private PacketSeasonVisualizer packetSeasonVisualizer;
     private ProtocolLibHook protocolLibHook;
+    private NatureEngineExpansion placeholderExpansion;
 
     public LifecycleManager(JavaPlugin plugin, ServiceLocator serviceLocator) {
         this.plugin = plugin;
@@ -93,7 +95,11 @@ public final class LifecycleManager {
         // 注册 /ne 命令（包含 ne debug）
         registerCommands();
 
-        // TODO: 在后续阶段补充 SeasonManager、WeatherManager、EnvironmentManager 等核心服务注册
+        // PlaceholderAPI 软依赖：存在则注册占位符扩展
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+            placeholderExpansion = new NatureEngineExpansion(plugin);
+            placeholderExpansion.register();
+        }
 
         // 刷新队列处理：每 tick 执行，每玩家每 tick 处理 chunks-per-tick-per-player 个
         globalScheduler.runTaskTimer(packetSeasonVisualizer::tick, 20L, 1L);
@@ -103,6 +109,10 @@ public final class LifecycleManager {
     }
 
     public void onDisable() {
+        if (placeholderExpansion != null) {
+            placeholderExpansion.unregister();
+            placeholderExpansion = null;
+        }
         if (globalScheduler != null) {
             globalScheduler.shutdown();
         }
