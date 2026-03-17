@@ -30,6 +30,7 @@ public final class Text {
     private static final Pattern LEGACY_HEX = Pattern.compile("(?i)&?#([0-9a-f]{6})");
     private static final Pattern MM_COLOR_TAG = Pattern.compile("(?i)<color:#([0-9a-f]{6})>");
     private static final Pattern MM_COLOR_CLOSE = Pattern.compile("(?i)</color>");
+    private static final Pattern MM_RESET_SHORT = Pattern.compile("</>");
 
     private Text() {}
 
@@ -43,10 +44,11 @@ public final class Text {
                 // 兼容用户写法：<color:#RRGGBB>
                 mm = normalizeMiniMessageColor(mm);
                 // 允许只写开标签：例如 "<red>文本"、"<#ffcc00>文本"、"<color:#ffcc00>文本"
-                // 这里统一在末尾补一个 "</>" 作为样式重置，避免“漏色”影响后续文本。
-                // 如果用户写了闭合标签也不会受影响，"</>" 只是额外 reset。
-                if (!mm.endsWith("</>")) {
-                    mm = mm + "</>";
+                // 将简写的 </> 规范化为 <reset>，避免部分客户端/实现不识别导致显示出字符。
+                mm = MM_RESET_SHORT.matcher(mm).replaceAll("<reset>");
+                // 统一在末尾补一个 <reset>，避免“漏色”影响后续文本。
+                if (!mm.endsWith("<reset>")) {
+                    mm = mm + "<reset>";
                 }
                 return MINI.deserialize(mm);
             } catch (Throwable ignored) {
@@ -86,8 +88,8 @@ public final class Text {
             m.appendReplacement(sb, Matcher.quoteReplacement("<#" + hex + ">"));
         }
         m.appendTail(sb);
-        // 关闭标签兼容：把 </color> 变成通用 reset </>（因为我们把 opening 转成了 <#...>）
-        return MM_COLOR_CLOSE.matcher(sb.toString()).replaceAll("</>");
+        // 关闭标签兼容：把 </color> 变成 <reset>（因为我们把 opening 转成了 <#...>）
+        return MM_COLOR_CLOSE.matcher(sb.toString()).replaceAll("<reset>");
     }
 
     private static String toSectionX(String hex6) {

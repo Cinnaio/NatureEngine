@@ -4,11 +4,11 @@ import com.github.cinnaio.natureEngine.core.agriculture.season.visual.protocol.P
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 import com.github.cinnaio.natureEngine.engine.config.VisualConfigView;
+import com.github.cinnaio.natureEngine.engine.text.I18n;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import com.github.cinnaio.natureEngine.engine.text.Text;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -28,6 +28,7 @@ public final class PacketSeasonVisualizer {
     private final JavaPlugin plugin;
     private final SeasonManager seasonManager;
     private final VisualConfigView configView;
+    private final I18n i18n;
     private final ProtocolBiomeListener protocolBiomeListener;
 
     // playerId -> chunk queue (chunkX, chunkZ packed)
@@ -35,21 +36,30 @@ public final class PacketSeasonVisualizer {
     // 自动跟随：上次入队时的区块中心 (chunkX, chunkZ)，用于检测移动
     private final Map<UUID, int[]> lastEnqueuedChunk = new HashMap<>();
 
-    public PacketSeasonVisualizer(JavaPlugin plugin, SeasonManager seasonManager, VisualConfigView configView) {
+    public PacketSeasonVisualizer(JavaPlugin plugin, SeasonManager seasonManager, VisualConfigView configView, I18n i18n) {
         this.plugin = plugin;
         this.seasonManager = seasonManager;
         this.configView = configView;
+        this.i18n = i18n;
         this.protocolBiomeListener = new ProtocolBiomeListener(plugin, seasonManager, configView);
         this.protocolBiomeListener.start();
     }
 
     public void enqueueApply(Player player) {
         if (!isTargetWorld(player.getWorld())) {
-            player.sendMessage(Text.parse("&c该命令仅对 world 生效。"));
+            if (i18n != null) {
+                player.sendMessage(i18n.tr(player, "visual.only-world"));
+            } else {
+                player.sendMessage("该命令仅对 world 生效。");
+            }
             return;
         }
         enqueueChunks(player, true);
-        player.sendMessage(Text.parse("&a已开始刷新你周围区域的季节视觉。"));
+        if (i18n != null) {
+            player.sendMessage(i18n.tr(player, "visual.refresh-started"));
+        } else {
+            player.sendMessage("已开始刷新你周围区域的季节视觉。");
+        }
     }
 
     /** 仅入队不发消息，供自动跟随使用。 */

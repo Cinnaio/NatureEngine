@@ -13,6 +13,7 @@ import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentManager;
 import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.scheduler.GlobalScheduler;
+import com.github.cinnaio.natureEngine.engine.text.I18n;
 import com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineHook;
 import com.github.cinnaio.natureEngine.integration.protocollib.ProtocolLibHook;
 import org.bukkit.Bukkit;
@@ -50,6 +51,11 @@ public final class LifecycleManager {
         configManager.load();
         serviceLocator.register(ConfigManager.class, configManager);
 
+        // i18n
+        I18n i18n = new I18n(plugin);
+        i18n.load();
+        serviceLocator.register(I18n.class, i18n);
+
         // 初始化全局调度器（后续季节/天气/生长模拟都基于此）
         this.globalScheduler = new GlobalScheduler(plugin);
         globalScheduler.init();
@@ -57,7 +63,7 @@ public final class LifecycleManager {
 
         // 核心农业环境相关服务
         this.seasonManager = new SeasonManager(configManager.getSeasonConfig());
-        serviceLocator.register(SeasonNotifier.class, new SeasonNotifier(configManager.getSeasonConfig()));
+        serviceLocator.register(SeasonNotifier.class, new SeasonNotifier(configManager.getSeasonConfig(), i18n));
         // 强制依赖 ProtocolLib（发包视觉层）
         this.protocolLibHook = new ProtocolLibHook(plugin);
         WeatherController weatherController = new WeatherController(configManager.getWeatherConfig());
@@ -69,7 +75,7 @@ public final class LifecycleManager {
         GrowthCalculator growthCalculator = new GrowthCalculator(configManager.getGrowthConfig(), configManager.getWeatherConfig());
         this.cropManager = new CropManager(cropRegistry, growthCalculator);
         this.craftEngineHook = new CraftEngineHook(plugin);
-        this.packetSeasonVisualizer = new PacketSeasonVisualizer(plugin, seasonManager, configManager.getVisualConfig());
+        this.packetSeasonVisualizer = new PacketSeasonVisualizer(plugin, seasonManager, configManager.getVisualConfig(), i18n);
 
         serviceLocator.register(SeasonManager.class, seasonManager);
         serviceLocator.register(WeatherManager.class, weatherManager);

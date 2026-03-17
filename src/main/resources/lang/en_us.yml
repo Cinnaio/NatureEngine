@@ -1,0 +1,55 @@
+lang:
+  meta:
+    name: "English (US)"
+    code: "en_us"
+
+  common:
+    no-permission: "<color:#FFB4B4>You don't have permission to do that."
+    config-not-ready: "<color:#FFB4B4>Config system is not initialized."
+    reloaded: "<color:#A9B3C3>Reloaded: <color:#FFE2A9>{module}"
+    only-player: "<color:#FFB4B4>This command can only be used by a player."
+
+  command:
+    ne:
+      help-title: "<color:#B8C7FF>[NatureEngine] <color:#A9B3C3>Commands:"
+      help-debug: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug <color:#A9B3C3>Show season/weather/environment info"
+      help-season-info: "<color:#A9B3C3>- <color:#FFE2A9>/ne season info <color:#A9B3C3>Show current season info"
+      help-season-next: "<color:#A9B3C3>- <color:#FFE2A9>/ne season next <color:#A9B3C3>Switch to next season"
+      help-season-set: "<color:#A9B3C3>- <color:#FFE2A9>/ne season set <spring|summer|autumn|winter> <color:#A9B3C3>Set current season"
+      help-season-clear: "<color:#A9B3C3>- <color:#FFE2A9>/ne season clear <color:#A9B3C3>Clear season override"
+      help-season-apply: "<color:#A9B3C3>- <color:#FFE2A9>/ne season apply <color:#A9B3C3>Re-apply season visuals"
+      help-reload: "<color:#A9B3C3>- <color:#FFE2A9>/ne reload <...> <color:#A9B3C3>Reload config module"
+
+  season:
+    display:
+      spring: "Spring"
+      summer: "Summer"
+      autumn: "Autumn"
+      winter: "Winter"
+    info-title: "<color:#B8C7FF>[NatureEngine] <color:#A9B3C3>Season Info"
+    override-set: "<color:#A9B3C3>Season set to <color:#FFE2A9>{season} <color:#A9B3C3>(override)"
+    override-cleared: "<color:#A9B3C3>Season override cleared. Back to natural cycle."
+    hint-visual-restore: "<color:#A9B3C3>Tip: visuals will recover as chunks resend."
+    notify-actionbar: "<color:#A9B3C3>Season <color:#FFE2A9>{season}"
+    no-permission-control: "<color:#FFB4B4>You don't have permission to control seasons."
+    set-usage: "<color:#A9B3C3>Usage <color:#FFE2A9>/ne season set <spring|summer|autumn|winter>"
+    unknown-season: "<color:#FFB4B4>Unknown season <color:#FFE2A9>{input} <color:#A9B3C3>Valid <color:#FFE2A9>spring, summer, autumn, winter"
+    world-line: "<color:#A9B3C3>World <color:#FFE2A9>{world}"
+    season-line: "<color:#A9B3C3>Season <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
+    override-status-line: "<color:#A9B3C3>Override {status}"
+    override-status-on: "<color:#FFB4B4>On"
+    override-status-off: "<color:#B7F0C2>Off"
+
+  debug:
+    title: "<color:#B8C7FF>[NatureEngine Debug]"
+    season-line: "<color:#A9B3C3>Season <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
+    weather-line: "<color:#A9B3C3>Weather <color:#FFE2A9>{weather}"
+    env-line: "<color:#A9B3C3>Env <color:#FFE2A9>T={temp} <color:#A9B3C3>H={humidity} <color:#A9B3C3>Soil={soil} <color:#A9B3C3>Light={light}"
+
+  visual:
+    only-world: "<color:#FFB4B4>This command only works in world."
+    refresh-started: "<color:#A9B3C3>Refreshing season visuals…"
+    refresh-started-season: "<color:#A9B3C3>Refreshing visuals <color:#FFE2A9>{season}"
+    not-ready: "<color:#FFB4B4>Visual system is disabled or not initialized."
+    restore-hint: "<color:#A9B3C3>Packet-based visuals restore as chunks resend (or rejoin)."
+

@@ -1,0 +1,57 @@
+lang:
+  meta:
+    name: "简体中文"
+    code: "zh_cn"
+
+  # 通用
+  common:
+    no-permission: "<color:#FFB4B4>你没有权限执行该命令。"
+    config-not-ready: "<color:#FFB4B4>配置系统未初始化。"
+    reloaded: "<color:#A9B3C3>已重载： <color:#FFE2A9>{module}"
+    only-player: "<color:#FFB4B4>该命令只能由玩家执行。"
+
+  # /ne help
+  command:
+    ne:
+      help-title: "<color:#B8C7FF>[NatureEngine] <color:#A9B3C3>可用子命令："
+      help-debug: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug <color:#A9B3C3>显示当前世界季节、天气与环境信息"
+      help-season-info: "<color:#A9B3C3>- <color:#FFE2A9>/ne season info <color:#A9B3C3>显示当前世界季节信息"
+      help-season-next: "<color:#A9B3C3>- <color:#FFE2A9>/ne season next <color:#A9B3C3>切换到下一季节"
+      help-season-set: "<color:#A9B3C3>- <color:#FFE2A9>/ne season set <spring|summer|autumn|winter> <color:#A9B3C3>设置当前世界季节"
+      help-season-clear: "<color:#A9B3C3>- <color:#FFE2A9>/ne season clear <color:#A9B3C3>清除手动季节覆盖"
+      help-season-apply: "<color:#A9B3C3>- <color:#FFE2A9>/ne season apply <color:#A9B3C3>重新应用当前季节视觉效果"
+      help-reload: "<color:#A9B3C3>- <color:#FFE2A9>/ne reload <...> <color:#A9B3C3>重载配置模块"
+
+  season:
+    display:
+      spring: "春"
+      summer: "夏"
+      autumn: "秋"
+      winter: "冬"
+    info-title: "<color:#B8C7FF>[NatureEngine] <color:#A9B3C3>季节信息"
+    override-set: "<color:#A9B3C3>季节已切换为 <color:#FFE2A9>{season} <color:#A9B3C3>（手动覆盖）"
+    override-cleared: "<color:#A9B3C3>已清除季节覆盖，恢复自然推进。"
+    hint-visual-restore: "<color:#A9B3C3>提示：发包视觉会在区块重新发送时自然恢复。"
+    notify-actionbar: "<color:#A9B3C3>季节 <color:#FFE2A9>{season}"
+    no-permission-control: "<color:#FFB4B4>你没有权限控制季节。"
+    set-usage: "<color:#A9B3C3>用法 <color:#FFE2A9>/ne season set <spring|summer|autumn|winter>"
+    unknown-season: "<color:#FFB4B4>未知季节 <color:#FFE2A9>{input} <color:#A9B3C3>可用 <color:#FFE2A9>spring, summer, autumn, winter"
+    world-line: "<color:#A9B3C3>世界 <color:#FFE2A9>{world}"
+    season-line: "<color:#A9B3C3>季节 <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
+    override-status-line: "<color:#A9B3C3>覆盖 {status}"
+    override-status-on: "<color:#FFB4B4>已覆盖"
+    override-status-off: "<color:#B7F0C2>自然推进"
+
+  debug:
+    title: "<color:#B8C7FF>[NatureEngine Debug]"
+    season-line: "<color:#A9B3C3>季节 <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
+    weather-line: "<color:#A9B3C3>天气 <color:#FFE2A9>{weather}"
+    env-line: "<color:#A9B3C3>环境 <color:#FFE2A9>T={temp} <color:#A9B3C3>H={humidity} <color:#A9B3C3>Soil={soil} <color:#A9B3C3>Light={light}"
+
+  visual:
+    only-world: "<color:#FFB4B4>该命令仅对 world 生效。"
+    refresh-started: "<color:#A9B3C3>正在刷新你周围的季节视觉…"
+    refresh-started-season: "<color:#A9B3C3>正在刷新季节视觉 <color:#FFE2A9>{season}"
+    not-ready: "<color:#FFB4B4>视觉系统未启用或未初始化。"
+    restore-hint: "<color:#A9B3C3>当前为发包视觉模式，恢复由区块重发自然完成（或重新登录）。"
+
