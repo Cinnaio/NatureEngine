@@ -58,6 +58,13 @@ public final class PacketSeasonVisualizer {
         enqueueChunks(player, false);
     }
 
+    /** 重载 visual.yml 后可调用：为在线玩家静默入队刷新周围区域。 */
+    public void enqueueApplyAllSilent() {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            enqueueChunksSilent(p);
+        }
+    }
+
     private void enqueueChunks(Player player, boolean sendMessage) {
         int radius = configView.getRadiusChunks();
         int centerChunkX = player.getLocation().getBlockX() >> 4;

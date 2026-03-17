@@ -3,6 +3,7 @@ package com.github.cinnaio.natureEngine.core.agriculture.weather;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
 import com.github.cinnaio.natureEngine.engine.config.WeatherConfigView;
 import com.github.cinnaio.natureEngine.engine.scheduler.GlobalScheduler;
+import io.papermc.paper.threadedregions.scheduler.ScheduledTask;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,6 +19,7 @@ public final class WeatherManager {
     private final SeasonManager seasonManager;
     private final WeatherConfigView configView;
     private final WeatherController controller;
+    private ScheduledTask task;
 
     public WeatherManager(JavaPlugin plugin,
                           GlobalScheduler scheduler,
@@ -32,8 +34,27 @@ public final class WeatherManager {
     }
 
     public void start() {
-        long periodTicks = configView.getTickIntervalSeconds() * 20L;
-        scheduler.runTaskTimer(this::tick, periodTicks, periodTicks);
+        reschedule();
+    }
+
+    /** 重载 weather.yml 后调用：按新间隔重建定时任务，并立即 tick 一次。 */
+    public void reloadNow() {
+        // Folia/Luminol：修改世界天气必须在 global region 执行
+        Bukkit.getGlobalRegionScheduler().execute(plugin, () -> {
+            reschedule();
+            tick();
+        });
+    }
+
+    private void reschedule() {
+        long periodTicks = Math.max(20L, configView.getTickIntervalSeconds() * 20L);
+        if (task != null) {
+            try {
+                task.cancel();
+            } catch (Throwable ignored) {
+            }
+        }
+        task = scheduler.runTaskTimer(this::tick, periodTicks, periodTicks);
     }
 
     private void tick() {

@@ -1,7 +1,10 @@
 package com.github.cinnaio.natureEngine.engine.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
+
+import java.io.File;
 
 /**
  * 负责加载与保存主配置文件，后续可扩展为分模块配置。
@@ -17,6 +20,13 @@ public final class ConfigManager {
     private VisualConfigView visualConfigView;
     private ConfigLoader loader;
 
+    // 模块配置文件（保持同一个对象引用，便于运行时 reload 后所有 ConfigView 自动读到新值）
+    private FileConfiguration seasonsCfg;
+    private FileConfiguration growthCfg;
+    private FileConfiguration debugCfg;
+    private FileConfiguration weatherCfg;
+    private FileConfiguration visualCfg;
+
     public ConfigManager(Plugin plugin) {
         this.plugin = plugin;
     }
@@ -26,12 +36,13 @@ public final class ConfigManager {
         this.config = plugin.getConfig();
 
         this.loader = new ConfigLoader(plugin);
-        FileConfiguration growthCfg = loader.loadOrSaveDefault("growth.yml");
-        FileConfiguration debugCfg = loader.loadOrSaveDefault("config.yml");
-        FileConfiguration weatherCfg = loader.loadOrSaveDefault("weather.yml");
-        FileConfiguration visualCfg = loader.loadOrSaveDefault("visual.yml");
+        this.growthCfg = loader.loadOrSaveDefault("growth.yml");
+        this.debugCfg = loader.loadOrSaveDefault("config.yml");
+        this.weatherCfg = loader.loadOrSaveDefault("weather.yml");
+        this.visualCfg = loader.loadOrSaveDefault("visual.yml");
 
-        this.seasonConfigView = new SeasonConfigView(loader.loadOrSaveDefault("seasons.yml"));
+        this.seasonsCfg = loader.loadOrSaveDefault("seasons.yml");
+        this.seasonConfigView = new SeasonConfigView(seasonsCfg);
         this.growthConfigView = new GrowthConfigView(growthCfg);
         this.debugConfigView = new DebugConfigView(debugCfg);
         this.weatherConfigView = new WeatherConfigView(weatherCfg);
@@ -65,6 +76,45 @@ public final class ConfigManager {
     public void reload() {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
+    }
+
+    /**
+     * 按模块重载 YAML 文件（不会重建 ConfigView 对象，避免引用失效）。
+     * 支持：seasons/growth/debug/weather/visual/all
+     */
+    public void reloadModule(String module) {
+        if (module == null) return;
+        String m = module.trim().toLowerCase();
+        switch (m) {
+            case "all" -> {
+                reloadYaml(seasonsCfg, "seasons.yml");
+                reloadYaml(growthCfg, "growth.yml");
+                reloadYaml(debugCfg, "config.yml");
+                reloadYaml(weatherCfg, "weather.yml");
+                reloadYaml(visualCfg, "visual.yml");
+                // 主配置（config.yml 之外的 plugin.yml 主配置）也一并刷新
+                reload();
+            }
+            case "season", "seasons" -> reloadYaml(seasonsCfg, "seasons.yml");
+            case "growth" -> reloadYaml(growthCfg, "growth.yml");
+            case "debug", "config" -> reloadYaml(debugCfg, "config.yml");
+            case "weather" -> reloadYaml(weatherCfg, "weather.yml");
+            case "visual" -> reloadYaml(visualCfg, "visual.yml");
+            default -> {
+                // ignore unknown
+            }
+        }
+    }
+
+    private void reloadYaml(FileConfiguration cfg, String fileName) {
+        if (cfg == null) return;
+        if (!(cfg instanceof YamlConfiguration yml)) return;
+        try {
+            File target = new File(plugin.getDataFolder(), fileName);
+            yml.load(target);
+        } catch (Exception e) {
+            plugin.getLogger().warning("[NatureEngine] reload failed: " + fileName + " -> " + e.getMessage());
+        }
     }
 
     public void saveIfNeeded() {

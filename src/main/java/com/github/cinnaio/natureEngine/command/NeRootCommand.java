@@ -7,7 +7,9 @@ import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonNotifier;
 import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
+import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
+import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.text.Text;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -42,6 +44,9 @@ public final class NeRootCommand extends Command {
         if ("season".equals(sub)) {
             return handleSeason(sender, Arrays.copyOfRange(args, 1, args.length));
         }
+        if ("reload".equals(sub)) {
+            return handleReload(sender, Arrays.copyOfRange(args, 1, args.length));
+        }
 
         sendHelp(sender);
         return true;
@@ -56,6 +61,7 @@ public final class NeRootCommand extends Command {
         sender.sendMessage(Text.parse("&e/ne season clear &7- 清除手动季节覆盖"));
         sender.sendMessage(Text.parse("&e/ne season apply &7- 重新应用当前季节的视觉效果（biome palette）"));
         sender.sendMessage(Text.parse("&e/ne season restore &7- （预留）"));
+        sender.sendMessage(Text.parse("&e/ne reload <seasons|growth|weather|visual|debug|all> &7- 重载配置模块"));
     }
 
     private boolean handleDebug(CommandSender sender) {
@@ -116,6 +122,37 @@ public final class NeRootCommand extends Command {
                 sendHelp(sender);
                 return true;
         }
+    }
+
+    private boolean handleReload(CommandSender sender, String[] args) {
+        if (!sender.isOp()) {
+            sender.sendMessage(Text.parse("&c你没有权限执行该命令。"));
+            return true;
+        }
+        String module = (args.length >= 1) ? args[0] : "all";
+        ConfigManager cm = SERVICES.get(ConfigManager.class);
+        if (cm == null) {
+            sender.sendMessage(Text.parse("&c配置系统未初始化。"));
+            return true;
+        }
+        cm.reloadModule(module);
+        sender.sendMessage(Text.parse("&a已重载配置模块: &e" + module));
+
+        // 重载后即时应用
+        String m = module.toLowerCase(Locale.ROOT);
+        if ("all".equals(m) || "visual".equals(m)) {
+            PacketSeasonVisualizer visualizer = SERVICES.get(PacketSeasonVisualizer.class);
+            if (visualizer != null) {
+                visualizer.enqueueApplyAllSilent();
+            }
+        }
+        if ("all".equals(m) || "weather".equals(m)) {
+            WeatherManager wm = SERVICES.get(WeatherManager.class);
+            if (wm != null) {
+                wm.reloadNow();
+            }
+        }
+        return true;
     }
 
     private boolean handleSeasonInfo(Player player, World world) {
