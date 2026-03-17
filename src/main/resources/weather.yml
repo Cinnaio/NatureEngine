@@ -1,11 +1,24 @@
+# ============================================================
+# 天气配置
+# 天气由季节控制：定时任务按 tick-interval 执行，根据当前季节的
+# season-weights 做加权随机选择下一天气，并设置持续时长。
+# 季节来源：世界时间（world.getFullTime()）经 SeasonManager 计算得出。
+# ============================================================
+
 weather:
+  # 天气切换检测间隔（秒）。每间隔到期，对所有世界按当前季节重新随机选天气。
   tick-interval-seconds: 90
+
+  # 各天气类型持续时间（秒）。选到该天气后，世界将保持该天气此时长。
   duration-seconds:
     SUNNY: 300
     RAIN: 240
     STORM: 180
     SNOW: 240
 
+  # 季节 → 天气权重。每季节内，各天气的权重决定被选中的概率（权重越高越容易出现）。
+  # 例如 spring: SUNNY=6, RAIN=10 → 晴天 6/(6+10+2)=33%，雨天 56%，雷雨 11%。
+  # 权重为 0 表示该季节不会出现该天气（如冬季无晴天可设 SUNNY: 0）。
   season-weights:
     spring:
       SUNNY: 6
@@ -28,7 +41,11 @@ weather:
       STORM: 2
       SNOW: 10
 
+  # 各天气对 Environment 的影响：温度/湿度/土壤湿度偏移，及生长倍率。
+  # 用于 EnvironmentManager 计算作物生长、枯萎等。
   profiles:
+    # temperature-delta: 在季节基准温度上的增减；humidity/soil-moisture-delta 同理
+    # growth-multiplier: 该天气下作物生长的额外倍率（与季节 growth-multiplier 叠加）
     SUNNY:
       temperature-delta: 2.0
       humidity-delta: -0.1
