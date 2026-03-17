@@ -7,6 +7,7 @@ import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
+import com.github.cinnaio.natureEngine.engine.text.Text;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -46,14 +47,14 @@ public final class NeRootCommand extends Command {
     }
 
     private void sendHelp(CommandSender sender) {
-        sender.sendMessage("§a[NatureEngine] 可用子命令:");
-        sender.sendMessage("§e/ne debug §7- 显示当前世界季节、天气与环境信息");
-        sender.sendMessage("§e/ne season info §7- 显示当前世界季节信息");
-        sender.sendMessage("§e/ne season next §7- 切换到下一季节");
-        sender.sendMessage("§e/ne season set <spring|summer|autumn|winter> §7- 设置当前世界季节");
-        sender.sendMessage("§e/ne season clear §7- 清除手动季节覆盖");
-        sender.sendMessage("§e/ne season apply §7- 重新应用当前季节的视觉效果（biome tint）");
-        sender.sendMessage("§e/ne season restore §7- （预留）");
+        sender.sendMessage(Text.parse("&a[NatureEngine] &f可用子命令:"));
+        sender.sendMessage(Text.parse("&e/ne debug &7- 显示当前世界季节、天气与环境信息"));
+        sender.sendMessage(Text.parse("&e/ne season info &7- 显示当前世界季节信息"));
+        sender.sendMessage(Text.parse("&e/ne season next &7- 切换到下一季节"));
+        sender.sendMessage(Text.parse("&e/ne season set <spring|summer|autumn|winter> &7- 设置当前世界季节"));
+        sender.sendMessage(Text.parse("&e/ne season clear &7- 清除手动季节覆盖"));
+        sender.sendMessage(Text.parse("&e/ne season apply &7- 重新应用当前季节的视觉效果（biome palette）"));
+        sender.sendMessage(Text.parse("&e/ne season restore &7- （预留）"));
     }
 
     private boolean handleDebug(CommandSender sender) {
@@ -121,10 +122,10 @@ public final class NeRootCommand extends Command {
         double progress = SeasonAPI.getSeasonProgress(world);
         boolean overridden = SeasonAPI.hasOverride(world);
 
-        player.sendMessage("§a[NatureEngine] 季节信息");
+        player.sendMessage(Text.parse("&a[NatureEngine] &f季节信息"));
         player.sendMessage("当前世界: " + world.getName());
         player.sendMessage("季节: " + season + " (" + String.format("%.1f", progress * 100) + "%)");
-        player.sendMessage("季节覆盖状态: " + (overridden ? "§c已覆盖" : "§a自然推进"));
+        player.sendMessage(Text.parse("季节覆盖状态: " + (overridden ? "&c已覆盖" : "&a自然推进")));
         return true;
     }
 

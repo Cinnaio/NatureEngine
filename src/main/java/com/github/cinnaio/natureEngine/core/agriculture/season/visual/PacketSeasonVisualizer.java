@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import com.github.cinnaio.natureEngine.engine.text.Text;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -44,11 +45,11 @@ public final class PacketSeasonVisualizer {
 
     public void enqueueApply(Player player) {
         if (!isTargetWorld(player.getWorld())) {
-            player.sendMessage("§c该命令仅对 world 生效。");
+            player.sendMessage(Text.parse("&c该命令仅对 world 生效。"));
             return;
         }
         enqueueChunks(player, true);
-        player.sendMessage("§a已开始刷新你周围区域的季节视觉。");
+        player.sendMessage(Text.parse("&a已开始刷新你周围区域的季节视觉。"));
     }
 
     /** 仅入队不发消息，供自动跟随使用。 */
