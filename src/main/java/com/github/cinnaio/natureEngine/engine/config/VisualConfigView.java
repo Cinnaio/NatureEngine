@@ -34,6 +34,26 @@ public final class VisualConfigView {
         return Math.max(1, config.getInt("visual.max-columns-per-tick", 600));
     }
 
+    /** 玩家移动时自动入队刷新周围区块，使视觉跟随。 */
+    public boolean isAutoFollowEnabled() {
+        return config.getBoolean("visual.auto-follow", true);
+    }
+
+    /** 自动跟随检测间隔（tick），例如 40 = 约 2 秒。 */
+    public long getAutoFollowIntervalTicks() {
+        return Math.max(20L, config.getLong("visual.auto-follow-interval-ticks", 40L));
+    }
+
+    /** 玩家至少移动多少 chunk 才重新入队刷新，避免原地不动也刷。 */
+    public int getAutoFollowMinMoveChunks() {
+        return Math.max(0, config.getInt("visual.auto-follow-min-move-chunks", 1));
+    }
+
+    /** 每 tick 每玩家最多处理多少 chunk，越大刷新越快（例如 10 则半径 4 约 0.4 秒刷完）。 */
+    public int getChunksPerTickPerPlayer() {
+        return Math.max(1, config.getInt("visual.chunks-per-tick-per-player", 10));
+    }
+
     /**
      * 每个季节的默认目标 biome（用于“全群系都生效”）。
      * 支持：

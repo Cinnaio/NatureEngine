@@ -7,6 +7,9 @@ import com.github.cinnaio.natureEngine.core.agriculture.crop.listener.VanillaCro
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthCalculator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
 import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeasonVisualizer;
+import com.github.cinnaio.natureEngine.core.agriculture.season.visual.tint.BiomeTintConfigLoader;
+import com.github.cinnaio.natureEngine.core.agriculture.season.visual.tint.BiomeTintPalette;
+import com.github.cinnaio.natureEngine.core.agriculture.season.visual.tint.ProtocolBiomeTintListener;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherController;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentManager;
@@ -37,6 +40,7 @@ public final class LifecycleManager {
     private CraftEngineHook craftEngineHook;
     private PacketSeasonVisualizer packetSeasonVisualizer;
     private ProtocolLibHook protocolLibHook;
+    private ProtocolBiomeTintListener protocolBiomeTintListener;
 
     public LifecycleManager(JavaPlugin plugin, ServiceLocator serviceLocator) {
         this.plugin = plugin;
@@ -77,6 +81,11 @@ public final class LifecycleManager {
         serviceLocator.register(PacketSeasonVisualizer.class, packetSeasonVisualizer);
         serviceLocator.register(ProtocolLibHook.class, protocolLibHook);
 
+        // biome tint（仿 AdvancedSeasons）：读取 plugins/NatureEngine/biomeConfiguration/*.yml 并拦截注册表同步包改 effects 颜色
+        BiomeTintPalette tintPalette = new BiomeTintConfigLoader(plugin).loadOrEmpty();
+        this.protocolBiomeTintListener = new ProtocolBiomeTintListener(plugin, seasonManager, tintPalette);
+        this.protocolBiomeTintListener.start();
+
         // 注册原版作物监听
         Bukkit.getPluginManager().registerEvents(new VanillaCropListener(), plugin);
 
@@ -85,8 +94,11 @@ public final class LifecycleManager {
 
         // TODO: 在后续阶段补充 SeasonManager、WeatherManager、EnvironmentManager 等核心服务注册
 
-        // 发包视觉刷新 tick（20 chunk/秒：每 tick 约 1 chunk）
+        // 刷新队列处理：每 tick 执行，每玩家每 tick 处理 chunks-per-tick-per-player 个
         globalScheduler.runTaskTimer(packetSeasonVisualizer::tick, 20L, 1L);
+        // 自动跟随：按间隔检测玩家移动并入队刷新，使“走到哪视觉跟到哪”
+        long followInterval = configManager.getVisualConfig().getAutoFollowIntervalTicks();
+        globalScheduler.runTaskTimer(packetSeasonVisualizer::tickAutoFollow, followInterval, followInterval);
     }
 
     public void onDisable() {

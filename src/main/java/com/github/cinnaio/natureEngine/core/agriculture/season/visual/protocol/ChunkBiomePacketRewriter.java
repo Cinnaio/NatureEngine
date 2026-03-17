@@ -244,14 +244,16 @@ public final class ChunkBiomePacketRewriter {
             ChunkSectionByteRewriter.Result r = byteRewriter.rewrite(bytes, sections, idMap, defaultToId);
             stats.paletteEntriesReplaced = r.stats().paletteEntriesReplaced;
             stats.directPaletteSkipped = r.stats().directPaletteSkipped;
+            stats.directPaletteReplaced = r.stats().directPaletteReplaced;
             stats.failed = r.stats().failed;
             stats.failReason = r.stats().failReason;
 
-            if (!r.stats().failed && r.out() != bytes) {
-                // 把新 byte[] 写回 packetHandle 对象图里的那个字段
-                boolean wrote = replaceFirstByteArray(dataOwner, r.out(), 0, 4);
+            // 改写成功则写回；1.21.4 发包时按 chunkData.length 写长度，用新 buffer 后长度会一并更新
+            byte[] out = r.out();
+            if (!r.stats().failed && out != bytes) {
+                boolean wrote = replaceFirstByteArray(dataOwner, out, 0, 4);
                 stats.wroteBack = wrote;
-                stats.outputBytes = r.out().length;
+                stats.outputBytes = out.length;
             }
         } catch (Throwable t) {
             stats.failed = true;
@@ -340,6 +342,7 @@ public final class ChunkBiomePacketRewriter {
                 + " sections=" + stats.sectionCount
                 + " replaced=" + stats.paletteEntriesReplaced
                 + " directSkip=" + stats.directPaletteSkipped
+                + " directReplaced=" + stats.directPaletteReplaced
                 + " wroteBack=" + stats.wroteBack
                 + " noBytes=" + stats.noByteArrayFound
                 + " idEmpty=" + stats.idMapEmpty
@@ -353,6 +356,7 @@ public final class ChunkBiomePacketRewriter {
         int sectionCount;
         int paletteEntriesReplaced;
         int directPaletteSkipped;
+        int directPaletteReplaced;
         Integer defaultToId;
         boolean wroteBack;
         boolean noByteArrayFound;

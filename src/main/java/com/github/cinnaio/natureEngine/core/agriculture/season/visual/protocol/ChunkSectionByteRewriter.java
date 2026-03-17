@@ -19,6 +19,7 @@ public final class ChunkSectionByteRewriter {
         public int biomeContainersTouched;
         public int paletteEntriesReplaced;
         public int directPaletteSkipped;
+        public int directPaletteReplaced;
         public boolean failed;
         public String failReason;
     }
@@ -77,7 +78,9 @@ public final class ChunkSectionByteRewriter {
                     id = to;
                     stats.paletteEntriesReplaced++;
                 }
-            } else if (defaultToId != null && id != defaultToId) {
+            }
+            // 映射未命中时也要走 default 兜底（例如 terralith:*）
+            if (defaultToId != null && id != defaultToId) {
                 id = defaultToId;
                 stats.paletteEntriesReplaced++;
             }
@@ -99,7 +102,9 @@ public final class ChunkSectionByteRewriter {
                         id = to;
                         stats.paletteEntriesReplaced++;
                     }
-                } else if (defaultToId != null && id != defaultToId) {
+                }
+                // 映射未命中时也要走 default 兜底（例如 terralith:*）
+                if (defaultToId != null && id != defaultToId) {
                     id = defaultToId;
                     stats.paletteEntriesReplaced++;
                 }
@@ -111,11 +116,96 @@ public final class ChunkSectionByteRewriter {
             return;
         }
 
-        // direct/global palette：无法只改 palette（没有 palette）
-        stats.directPaletteSkipped++;
+        // direct/global palette：data 中直接存 raw id，需解码→替换→编码
         int dataLen = c.readVarInt();
+        if (replacePaletteIds == null && defaultToId == null) {
+            stats.directPaletteSkipped++;
+            out.writeVarInt(dataLen);
+            c.copyLongs(out, dataLen);
+            return;
+        }
+        long[] data = c.readLongs(dataLen);
+        int entriesPerSection = 4 * 4 * 4; // biome 64
+        int replaced = replacePackedBiomeData(data, bitsPerEntry, entriesPerSection, replacePaletteIds, defaultToId);
+        if (replaced > 0) {
+            stats.directPaletteReplaced += replaced;
+        } else {
+            stats.directPaletteSkipped++;
+        }
         out.writeVarInt(dataLen);
-        c.copyLongs(out, dataLen);
+        out.writeLongs(data);
+    }
+
+    /**
+     * 解码 packed long[] 中的值，按 idMap/defaultToId 替换后写回 data。
+     * 用于 direct palette（bitsPerEntry > 8）。
+     */
+    private static int replacePackedBiomeData(long[] data, int bitsPerEntry, int entryCount,
+                                              Map<Integer, Integer> idMap, Integer defaultToId) {
+        if (bitsPerEntry <= 0 || bitsPerEntry > 24) return 0;
+        int mask = (1 << bitsPerEntry) - 1;
+        int replaced = 0;
+        int bitIndex = 0;
+        for (int i = 0; i < entryCount; i++) {
+            int value = readPacked(data, bitIndex, bitsPerEntry, mask);
+            int newValue = value;
+            if (idMap != null) {
+                Integer to = idMap.get(value);
+                if (to != null) {
+                    newValue = to;
+                    replaced++;
+                }
+            }
+            if (newValue == value && defaultToId != null && value != defaultToId) {
+                newValue = defaultToId;
+                replaced++;
+            }
+            writePacked(data, bitIndex, bitsPerEntry, newValue);
+            bitIndex += bitsPerEntry;
+        }
+        return replaced;
+    }
+
+    private static int readPacked(long[] data, int startBit, int bits, int mask) {
+        int longIndex = startBit / 64;
+        int bitInLong = startBit % 64;
+        int result = 0;
+        int remaining = bits;
+        int outShift = 0;
+        while (remaining > 0 && longIndex < data.length) {
+            long l = data[longIndex];
+            int take = Math.min(remaining, 64 - bitInLong);
+            long piece = (l >>> bitInLong) & ((1L << take) - 1);
+            result |= (int) (piece << outShift);
+            outShift += take;
+            remaining -= take;
+            bitInLong += take;
+            if (bitInLong >= 64) {
+                bitInLong = 0;
+                longIndex++;
+            }
+        }
+        return result & mask;
+    }
+
+    private static void writePacked(long[] data, int startBit, int bits, int value) {
+        int longIndex = startBit / 64;
+        int bitInLong = startBit % 64;
+        int remaining = bits;
+        int inShift = 0;
+        while (remaining > 0 && longIndex < data.length) {
+            int take = Math.min(remaining, 64 - bitInLong);
+            long mask = (1L << take) - 1;
+            long piece = (value >>> inShift) & mask;
+            data[longIndex] = (data[longIndex] & ~(mask << bitInLong)) | (piece << bitInLong);
+            inShift += take;
+            remaining -= take;
+            bitInLong += take;
+            if (bitInLong >= 64) {
+                bitInLong = 0;
+                longIndex++;
+            }
+        }
     }
 
     /**
@@ -166,6 +256,18 @@ public final class ChunkSectionByteRewriter {
             out.write(in, pos, bytes);
             pos += bytes;
         }
+
+        long[] readLongs(int count) {
+            long[] arr = new long[count];
+            for (int i = 0; i < count; i++) {
+                long v = 0;
+                for (int j = 0; j < 8; j++) {
+                    v |= (long) (in[pos++] & 0xFF) << (j * 8);
+                }
+                arr[i] = v;
+            }
+            return arr;
+        }
     }
 
     /**
@@ -194,6 +296,14 @@ public final class ChunkSectionByteRewriter {
                 }
                 this.write((v & 0x7F) | 0x80);
                 v >>>= 7;
+            }
+        }
+
+        void writeLongs(long[] data) {
+            for (long v : data) {
+                for (int j = 0; j < 8; j++) {
+                    write((int) ((v >>> (j * 8)) & 0xFF));
+                }
             }
         }
     }

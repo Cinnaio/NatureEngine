@@ -41,7 +41,8 @@ public final class NmsBiomeIdResolver {
             if (resourceLocation == null) return null;
             Object value = tryGetRegistryValue(registry, resourceLocation);
             if (value == null) return null;
-            return tryInvokeGetId(registry, value);
+            Integer id = tryInvokeGetId(registry, value);
+            return (id != null && id >= 0) ? id : null;
         } catch (Throwable ignored) {
             return null;
         }
@@ -94,7 +95,8 @@ public final class NmsBiomeIdResolver {
             Object value = tryGetRegistryValue(registry, resourceLocation);
             if (value == null) return null;
 
-            return tryInvokeGetId(registry, value);
+            Integer id = tryInvokeGetId(registry, value);
+            return (id != null && id >= 0) ? id : null;
         } catch (Throwable ignored) {
             return null;
         }

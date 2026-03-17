@@ -31,6 +31,8 @@ public final class PacketSeasonVisualizer {
 
     // playerId -> chunk queue (chunkX, chunkZ packed)
     private final Map<UUID, Deque<Long>> pending = new HashMap<>();
+    // 自动跟随：上次入队时的区块中心 (chunkX, chunkZ)，用于检测移动
+    private final Map<UUID, int[]> lastEnqueuedChunk = new HashMap<>();
 
     public PacketSeasonVisualizer(JavaPlugin plugin, SeasonManager seasonManager, VisualConfigView configView) {
         this.plugin = plugin;
@@ -45,12 +47,17 @@ public final class PacketSeasonVisualizer {
             player.sendMessage("§c该命令仅对 world 生效。");
             return;
         }
-        SeasonType season = seasonManager.getCurrentSeason(player.getWorld());
-        enqueueChunks(player, season);
-        player.sendMessage("§a已开始刷新你周围区域的季节视觉（20 chunk/秒）。");
+        enqueueChunks(player, true);
+        player.sendMessage("§a已开始刷新你周围区域的季节视觉。");
     }
 
-    private void enqueueChunks(Player player, SeasonType season) {
+    /** 仅入队不发消息，供自动跟随使用。 */
+    void enqueueChunksSilent(Player player) {
+        if (!isTargetWorld(player.getWorld())) return;
+        enqueueChunks(player, false);
+    }
+
+    private void enqueueChunks(Player player, boolean sendMessage) {
         int radius = configView.getRadiusChunks();
         int centerChunkX = player.getLocation().getBlockX() >> 4;
         int centerChunkZ = player.getLocation().getBlockZ() >> 4;
@@ -61,39 +68,53 @@ public final class PacketSeasonVisualizer {
                 q.add(packChunk(cx, cz));
             }
         }
+        lastEnqueuedChunk.put(player.getUniqueId(), new int[]{centerChunkX, centerChunkZ});
     }
 
     /**
-     * 每 tick 调用一次，按照 20 chunk/秒（≈每 tick 1 chunk）刷新队列。
+     * 每 tick 调用：处理刷新队列，每玩家每 tick 最多处理 chunksPerTickPerPlayer 个 chunk。
      */
     public void tick() {
         if (!configView.isEnabled()) {
             pending.clear();
             return;
         }
-        if (pending.isEmpty()) {
-            return;
-        }
-        // 每 tick 为每个玩家最多处理 1 个 chunk，避免瞬间刷新过多
+        if (pending.isEmpty()) return;
+        int perPlayer = configView.getChunksPerTickPerPlayer();
         for (var entry : pending.entrySet()) {
             UUID playerId = entry.getKey();
             Player player = Bukkit.getPlayer(playerId);
-            if (player == null || !player.isOnline()) {
-                continue;
-            }
-            if (!isTargetWorld(player.getWorld())) {
-                continue;
-            }
+            if (player == null || !player.isOnline() || !isTargetWorld(player.getWorld())) continue;
             Deque<Long> q = entry.getValue();
-            Long packed = q.pollFirst();
-            if (packed == null) {
-                continue;
+            World world = player.getWorld();
+            for (int i = 0; i < perPlayer; i++) {
+                Long packed = q.pollFirst();
+                if (packed == null) break;
+                refreshChunk(world, unpackChunkX(packed), unpackChunkZ(packed));
             }
-            int chunkX = unpackChunkX(packed);
-            int chunkZ = unpackChunkZ(packed);
-            refreshChunk(player.getWorld(), chunkX, chunkZ);
         }
         pending.entrySet().removeIf(e -> e.getValue().isEmpty());
+    }
+
+    /**
+     * 自动跟随：每隔一段时间检测在线玩家是否移动，移动则入队刷新周围区块（不发消息）。
+     */
+    public void tickAutoFollow() {
+        if (!configView.isEnabled() || !configView.isAutoFollowEnabled()) return;
+        int minMove = configView.getAutoFollowMinMoveChunks();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (!isTargetWorld(player.getWorld())) continue;
+            int cx = player.getLocation().getBlockX() >> 4;
+            int cz = player.getLocation().getBlockZ() >> 4;
+            int[] last = lastEnqueuedChunk.get(player.getUniqueId());
+            if (last == null) {
+                enqueueChunksSilent(player);
+                continue;
+            }
+            int dx = Math.abs(cx - last[0]);
+            int dz = Math.abs(cz - last[1]);
+            if (dx >= minMove || dz >= minMove) enqueueChunksSilent(player);
+        }
     }
 
     private void refreshChunk(World world, int chunkX, int chunkZ) {

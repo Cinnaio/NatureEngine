@@ -1,32 +1,176 @@
 visual:
   enabled: true
   debug: true
-  radius-chunks: 4
+  radius-chunks: 12
   max-columns-per-tick: 600
+  # 玩家走到哪视觉跟到哪：定时检测移动并刷新周围区块
+  auto-follow: true
+  auto-follow-interval-ticks: 40
+  auto-follow-min-move-chunks: 1
+  # 每 tick 每玩家处理 chunk 数，越大 ne season next 后更新越快
+  chunks-per-tick-per-player: 10
 
-  # “全群系生效”：未显式映射到的 biome 会被替换到该季节默认 biome（可用 Terralith 等命名空间）
+  # Terralith 风格季节预设（参考 AdvancedSeasons 的“按地形类型分组”思路）
+  # 说明：
+  # - 服务器需要启用 Terralith 数据包（否则 terralith:* biome 不存在，无法显示）
+  # - 不追求“把所有地形都强制改成同一个季节 biome”，那样会很突兀；而是按类型映射到一组更协调的 terralith biome
+  # - 海洋/河流默认尽量少动（否则颜色/雾感会很怪）
   season-biome-default:
-    SPRING: minecraft:meadow
-    SUMMER: minecraft:sunflower_plains
-    AUTUMN: minecraft:windswept_forest
-    WINTER: minecraft:snowy_plains
+    SPRING: terralith:blooming_valley
+    SUMMER: terralith:lush_valley
+    AUTUMN: terralith:scarlet_mountains
+    WINTER: terralith:snowy_maple_forest
 
-  season-biome-map:
+  # 按原版群系细调：将 vanilla 主要地形类型映射到 terralith 的更丰富风格
+  season-biome-key-map:
     SPRING:
-      PLAINS: MEADOW
-      FOREST: FLOWER_FOREST
+      # 平原/草甸：鲜亮绿 + 花海（更接近 AdvancedSeasons 的 spring）
+      minecraft:plains: terralith:blooming_valley
+      minecraft:sunflower_plains: terralith:blooming_plateau
+      minecraft:meadow: terralith:alpine_grove
+      minecraft:cherry_grove: terralith:sakura_grove
+
+      # 森林：更“清新”一点
+      minecraft:forest: terralith:moonlight_grove
+      minecraft:flower_forest: terralith:blooming_valley
+      minecraft:birch_forest: terralith:sakura_valley
+      minecraft:dark_forest: terralith:cloud_forest
+
+      # 丛林/热带：保持偏绿但不太“夏”
+      minecraft:jungle: terralith:amethyst_rainforest
+      minecraft:bamboo_jungle: terralith:amethyst_rainforest
+      minecraft:sparse_jungle: terralith:rocky_jungle
+
+      # 山地：青绿/高地
+      minecraft:windswept_hills: terralith:temperate_highlands
+      minecraft:stony_peaks: terralith:emerald_peaks
+      minecraft:jagged_peaks: terralith:rocky_mountains
+
+      # 干旱：春季给一点“绿洲”
+      minecraft:desert: terralith:desert_oasis
+      minecraft:badlands: terralith:bryce_canyon
+
+      # 湿地：偏花/偏绿
+      minecraft:swamp: terralith:orchid_swamp
+      minecraft:mangrove_swamp: terralith:orchid_swamp
+
+      # Terralith 自身季节变体
+      terralith:skylands_spring: terralith:skylands_spring
+      terralith:skylands_summer: terralith:skylands_spring
+      terralith:skylands_autumn: terralith:skylands_spring
+      terralith:skylands_winter: terralith:skylands_spring
+      terralith:alpha_islands: terralith:alpha_islands
+      terralith:alpha_islands_winter: terralith:alpha_islands
     SUMMER:
-      PLAINS: SUNFLOWER_PLAINS
-      FOREST: FOREST
+      # 平原/草甸：更“浓绿、更饱和”
+      minecraft:plains: terralith:lush_valley
+      minecraft:sunflower_plains: terralith:lavender_valley
+      minecraft:meadow: terralith:alpine_grove
+
+      # 森林：更深绿
+      minecraft:forest: terralith:lavender_forest
+      minecraft:flower_forest: terralith:lavender_valley
+      minecraft:birch_forest: terralith:lavender_forest
+      minecraft:dark_forest: terralith:cloud_forest
+
+      # 丛林/热带：明显“夏季”
+      minecraft:jungle: terralith:tropical_jungle
+      minecraft:bamboo_jungle: terralith:tropical_jungle
+      minecraft:sparse_jungle: terralith:rocky_jungle
+
+      # 稀树草原/干旱：干热
+      minecraft:savanna: terralith:ashen_savanna
+      minecraft:savanna_plateau: terralith:fractured_savanna
+      minecraft:desert: terralith:desert_spires
+      minecraft:badlands: terralith:warped_mesa
+
+      # 山地/火山：夏天更“硬核”
+      minecraft:jagged_peaks: terralith:volcanic_peaks
+      minecraft:stony_peaks: terralith:volcanic_crater
+      minecraft:windswept_hills: terralith:temperate_highlands
+
+      # 湿地：更深更暗
+      minecraft:swamp: terralith:orchid_swamp
+      minecraft:mangrove_swamp: terralith:orchid_swamp
+
+      # Terralith 自身季节变体
+      terralith:skylands_spring: terralith:skylands_summer
+      terralith:skylands_summer: terralith:skylands_summer
+      terralith:skylands_autumn: terralith:skylands_summer
+      terralith:skylands_winter: terralith:skylands_summer
+      terralith:alpha_islands: terralith:alpha_islands
+      terralith:alpha_islands_winter: terralith:alpha_islands
     AUTUMN:
-      PLAINS: WINDSWEPT_FOREST
-      FOREST: BIRCH_FOREST
+      # 秋季：黄/橙/红更明显（更接近 AdvancedSeasons 的 fall 草色/树色）
+      minecraft:plains: terralith:moonlight_valley
+      minecraft:sunflower_plains: terralith:moonlight_valley
+      minecraft:meadow: terralith:painted_mountains
+
+      minecraft:forest: terralith:scarlet_mountains
+      minecraft:flower_forest: terralith:moonlight_grove
+      minecraft:birch_forest: terralith:birch_taiga
+      minecraft:dark_forest: terralith:haze_mountain
+
+      # 针叶林：偏灰绿（不要直接进雪）
+      minecraft:taiga: terralith:siberian_taiga
+      minecraft:old_growth_pine_taiga: terralith:siberian_taiga
+      minecraft:old_growth_spruce_taiga: terralith:siberian_grove
+
+      # 干旱/恶地：秋季偏红/土色
+      minecraft:desert: terralith:ancient_sands
+      minecraft:badlands: terralith:savanna_badlands
+
+      # 山地：彩绘/红山
+      minecraft:windswept_hills: terralith:painted_mountains
+      minecraft:stony_peaks: terralith:scarlet_mountains
+      minecraft:jagged_peaks: terralith:emerald_peaks
+
+      # 湿地：偏褐
+      minecraft:swamp: terralith:orchid_swamp
+      minecraft:mangrove_swamp: terralith:orchid_swamp
+
+      # Terralith 自身季节变体
+      terralith:skylands_spring: terralith:skylands_autumn
+      terralith:skylands_summer: terralith:skylands_autumn
+      terralith:skylands_autumn: terralith:skylands_autumn
+      terralith:skylands_winter: terralith:skylands_autumn
+      terralith:alpha_islands: terralith:alpha_islands
+      terralith:alpha_islands_winter: terralith:alpha_islands
     WINTER:
-      PLAINS: SNOWY_PLAINS
-      FOREST: SNOWY_TAIGA
+      # 冬季：尽量“白 + 冷”，避免出现秋色（更接近 AdvancedSeasons 的 winter）
+      minecraft:plains: terralith:snowy_maple_forest
+      minecraft:sunflower_plains: terralith:snowy_maple_forest
+      minecraft:meadow: terralith:alpine_highlands
 
-  # 新格式（可选）：支持 terralith:* 这类 biome key
-  # season-biome-key-map:
-  #   AUTUMN:
-  #     terralith:lavender_forest: minecraft:birch_forest
+      minecraft:forest: terralith:wintry_forest
+      minecraft:birch_forest: terralith:snowy_cherry_grove
+      minecraft:dark_forest: terralith:wintry_forest
 
+      minecraft:taiga: terralith:wintry_forest
+      minecraft:old_growth_pine_taiga: terralith:wintry_forest
+      minecraft:old_growth_spruce_taiga: terralith:wintry_forest
+
+      # 山地：冰川/雪崖
+      minecraft:stony_peaks: terralith:frozen_cliffs
+      minecraft:jagged_peaks: terralith:glacial_chasm
+      minecraft:windswept_hills: terralith:frozen_cliffs
+      minecraft:grove: terralith:alpine_highlands
+
+      # 干旱/恶地：用 snowy_badlands，变化够明显
+      minecraft:desert: terralith:snowy_badlands
+      minecraft:badlands: terralith:snowy_badlands
+
+      # 湿地：冰沼
+      minecraft:swamp: terralith:ice_marsh
+      minecraft:mangrove_swamp: terralith:ice_marsh
+
+      # Terralith 自身季节变体
+      terralith:skylands_spring: terralith:skylands_winter
+      terralith:skylands_summer: terralith:skylands_winter
+      terralith:skylands_autumn: terralith:skylands_winter
+      terralith:skylands_winter: terralith:skylands_winter
+      terralith:alpha_islands: terralith:alpha_islands_winter
+      terralith:alpha_islands_winter: terralith:alpha_islands_winter
+  
+  # 注意：不要再配置 visual.season-biome-map（旧枚举版）。
+  # 它会与上面的 season-biome-key-map 合并，导致映射被覆盖，出现“冬天像秋天/像原版”的错觉。
