@@ -1,0 +1,33 @@
+biome-titles:
+  enabled: true
+
+  # 冷却（tick）。在 Biome 边界抖动时，避免反复弹出 Title
+  cooldown-ticks: 80
+
+  # 指定生效世界（为空则所有世界）
+  worlds: ["world"]
+
+  # 可选：按 group 判定边界（同组 Biome 之间移动不提示）
+  # - match 支持精确 key / 通配：
+  #   - minecraft:plains
+  #   - terralith:*
+  #   - minecraft:*_forest
+  #   - *plains*
+  groups:
+    - id: plains
+      title: "&7欢迎来到 &f平原地带"
+      match: ["minecraft:plains", "minecraft:sunflower_plains", "*plains*"]
+    - id: forest
+      title: "&7欢迎来到 &f森林地带"
+      match: ["*forest*", "*woods*"]
+
+  # Biome -> Title 文本（支持 & 颜色码 / MiniMessage）
+  # 当 biome 未命中任何 group 时，会回退到这里
+  titles:
+    PLAINS: "&7欢迎来到 &f平原"
+    FOREST: "&7欢迎来到 &f森林"
+    TAIGA: "&7欢迎来到 &f针叶林"
+    DESERT: "&7欢迎来到 &f沙漠"
+    JUNGLE: "&7欢迎来到 &f丛林"
+    SWAMP: "&7欢迎来到 &f沼泽"
+    SNOWY_PLAINS: "&7欢迎来到 &f雪原"

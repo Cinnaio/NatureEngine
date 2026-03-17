@@ -12,6 +12,7 @@ import com.github.cinnaio.natureEngine.core.agriculture.season.visual.PacketSeas
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherController;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherManager;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentManager;
+import com.github.cinnaio.natureEngine.core.environment.biome.BiomeWelcomeTitleListener;
 import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
 import com.github.cinnaio.natureEngine.engine.scheduler.GlobalScheduler;
 import com.github.cinnaio.natureEngine.engine.text.I18n;
@@ -44,6 +45,7 @@ public final class LifecycleManager {
     private EnvironmentManager environmentManager;
     private CropManager cropManager;
     private VanillaCropController vanillaCropController;
+    private BiomeWelcomeTitleListener biomeWelcomeTitleListener;
     private CraftEngineHook craftEngineHook;
     private CraftEngineCropController craftEngineCropController;
     private CustomNameplatesHook customNameplatesHook;
@@ -98,7 +100,9 @@ public final class LifecycleManager {
         serviceLocator.register(PacketSeasonVisualizer.class, packetSeasonVisualizer);
         serviceLocator.register(ProtocolLibHook.class, protocolLibHook);
 
-        // biome tint（仿 AdvancedSeasons）：读取 plugins/NatureEngine/biomeConfiguration/*.yml 并拦截注册表同步包改 effects 颜色
+        // Biome 地域欢迎 Title
+        biomeWelcomeTitleListener = new BiomeWelcomeTitleListener(plugin, configManager.getBiomeTitleConfig());
+        Bukkit.getPluginManager().registerEvents(biomeWelcomeTitleListener, plugin);
 
         // 注册原版作物监听
         Bukkit.getPluginManager().registerEvents(new VanillaCropListener(), plugin);
@@ -186,7 +190,7 @@ public final class LifecycleManager {
         int rts = configManager != null ? configManager.getGrowthConfig().getRandomTickSpeed() : 3;
         boolean cropsEnabled = configManager != null && configManager.getCropConfig() != null && configManager.getCropConfig().isGlobalEnabled();
 
-        // 直接发到控制台（无 [INFO]/[NatureEngine] 前缀），更像 TrChat 的风格
+        // 直接发到控制台
         console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(""));
         console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
                 "&7Loading &bNatureEngine &fv" + ver + " &8(&7MC: &f" + mcVer + "&8)"
@@ -201,6 +205,14 @@ public final class LifecycleManager {
         console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
                 "&8&7Config &8: &frts=" + rts + " &8  &7crops.enabled&8=&f" + cropsEnabled
         ));
+        if (configManager != null && configManager.getBiomeTitleConfig() != null) {
+            var bc = configManager.getBiomeTitleConfig();
+            console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse(
+                    "&8&7BiomeTitles &8: &fenabled=" + bc.isEnabled()
+                            + " &8  &7groups&8=&f" + bc.getGroupCount()
+                            + " &8  &7titles&8=&f" + bc.getTitleCount()
+            ));
+        }
         console.sendMessage(com.github.cinnaio.natureEngine.engine.text.Text.parse("&8&7Hooks"));
 
         logHook(console, "ProtocolLib", Optional.ofNullable(protocolLibHook).map(h -> h.getProtocolLib()).orElse(null));
