@@ -3,12 +3,8 @@ seasons:
   notify:
     enabled: true
     # mode: actionbar | chat | both
+    # 仅控制“提示走哪里显示”，内容已迁移到 lang/*.yml
     mode: actionbar
-    # 支持 &/§ 颜色码、&#RRGGBB，以及 MiniMessage（例如 <color:#ffcc00>）
-    # 柔和配色（偏粉蓝紫，尽量不刺眼）
-    # - {season}: 春/夏/秋/冬
-    # - {season_en}: SPRING/SUMMER/AUTUMN/WINTER
-    message: "<color:#B8C7FF>季节 <color:#A9B3C3>→ <color:#FFE2A9>{season}"
 
   spring:
     length-days: 10
