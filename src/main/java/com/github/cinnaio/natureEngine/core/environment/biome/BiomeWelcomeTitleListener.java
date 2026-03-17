@@ -41,14 +41,14 @@ public final class BiomeWelcomeTitleListener implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         // 进服延迟 1 tick，避免部分情况下位置/区块未就绪
-        Bukkit.getScheduler().runTask(plugin, () -> checkAndShow(player, true));
+        runNextTick(player, () -> checkAndShow(player, true));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent event) {
         Player player = event.getPlayer();
         // 传送后下一 tick 再判定
-        Bukkit.getScheduler().runTask(plugin, () -> checkAndShow(player, true));
+        runNextTick(player, () -> checkAndShow(player, true));
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -69,20 +69,20 @@ public final class BiomeWelcomeTitleListener implements Listener {
         if (!config.isWorldEnabled(world)) return;
 
         Biome biome = player.getLocation().getBlock().getBiome();
+        String biomeKey = safeBiomeKey(biome).toLowerCase(java.util.Locale.ROOT);
         String groupId = config.resolveGroupId(biome);
-        if (groupId == null) {
-            // 未命中 group：用 biome key 作为“临时 group”，避免同 biome 内反复触发
-            groupId = config.getTitle(biome).isPresent() ? ("biome:" + config.getTitle(biome).get()) : "biome:" + safeBiomeKey(biome);
-        }
-        if (!force) {
-            String prev = lastGroup.get(player.getUniqueId());
-            if (groupId.equals(prev)) return;
-        }
+        if (groupId == null) groupId = "biome:" + biomeKey;
+
+        UUID id = player.getUniqueId();
+        boolean first = !lastGroup.containsKey(id);
+        String prev = lastGroup.get(id);
+        if (!first && groupId.equals(prev)) return;
 
         long now = System.currentTimeMillis();
-        long next = nextAllowedAtMs.getOrDefault(player.getUniqueId(), 0L);
-        if (!force && now < next) {
-            lastGroup.put(player.getUniqueId(), groupId);
+        long next = nextAllowedAtMs.getOrDefault(id, 0L);
+        // force 也尊重冷却（除非玩家第一次进入没有历史记录）
+        if (!first && now < next) {
+            lastGroup.put(id, groupId);
             return;
         }
 
@@ -102,8 +102,8 @@ public final class BiomeWelcomeTitleListener implements Listener {
             player.showTitle(t);
         }
 
-        lastGroup.put(player.getUniqueId(), groupId);
-        nextAllowedAtMs.put(player.getUniqueId(), now + config.getCooldownMillis());
+        lastGroup.put(id, groupId);
+        nextAllowedAtMs.put(id, now + config.getCooldownMillis());
     }
 
     private static String safeBiomeKey(Biome biome) {
@@ -112,6 +112,23 @@ public final class BiomeWelcomeTitleListener implements Listener {
             return k != null ? k.toString() : String.valueOf(biome);
         } catch (Throwable ignored) {
             return String.valueOf(biome);
+        }
+    }
+
+    /**
+     * Folia/Luminol：不能使用 BukkitScheduler（会抛 UnsupportedOperationException）。
+     * 这里直接使用 RegionScheduler，把任务派发到玩家所在区块的 Region 线程执行。
+     */
+    private void runNextTick(Player player, Runnable task) {
+        if (player == null || task == null) return;
+        World world = player.getWorld();
+        int chunkX = player.getLocation().getBlockX() >> 4;
+        int chunkZ = player.getLocation().getBlockZ() >> 4;
+        try {
+            Bukkit.getRegionScheduler().execute(plugin, world, chunkX, chunkZ, task);
+        } catch (Throwable ignored) {
+            // 非 Folia 环境兜底：直接运行（join/teleport 事件线程）
+            task.run();
         }
     }
 }
