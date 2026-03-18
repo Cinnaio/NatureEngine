@@ -142,6 +142,7 @@ public final class NeRootCommand extends Command {
                             "weather",
                             "visual",
                             "crops",
+                            "environment",
                             "biome"
                     ), lower(args[1]));
                 }
@@ -291,12 +292,25 @@ public final class NeRootCommand extends Command {
                     "progress", String.format("%.1f", progress * 100)
             )));
             player.sendMessage(i18n.tr(player, "debug.weather-line", Map.of("weather", weather.name())));
-            player.sendMessage(i18n.tr(player, "debug.env-line", Map.of(
-                    "temp", String.format("%.1f", env.getTemperature()),
-                    "humidity", String.format("%.2f", env.getHumidity()),
-                    "soil", String.format("%.2f", env.getSoilMoisture()),
-                    "light", String.valueOf(env.getLightLevel())
-            )));
+            ConfigManager configManager = SERVICES.get(ConfigManager.class);
+            boolean envEnabled = configManager != null
+                    && configManager.getEnvironmentConfig() != null
+                    && configManager.getEnvironmentConfig().isEnabled();
+            java.util.Map<String, String> envArgs = new java.util.HashMap<>();
+            envArgs.put("env_enabled", envEnabled ? "true" : "false");
+            envArgs.put("temp", String.format("%.1f", env.getTemperature()));
+            envArgs.put("humidity", String.format("%.2f", env.getHumidity()));
+            envArgs.put("soil", String.format("%.2f", env.getSoilMoisture()));
+            envArgs.put("light", String.valueOf(env.getLightLevel()));
+            envArgs.put("sky_light", String.valueOf(env.getSkyLight()));
+            envArgs.put("block_light", String.valueOf(env.getBlockLight()));
+            envArgs.put("outdoor", env.isOutdoor() ? "true" : "false");
+            envArgs.put("alt_y", String.valueOf(env.getAltitudeY()));
+            envArgs.put("biome", env.getBiomeKey() != null
+                    ? env.getBiomeKey().toString()
+                    : (env.getBiome() != null ? env.getBiome().toString() : "unknown"));
+            envArgs.put("biome_group", env.getBiomeGroupId() != null ? env.getBiomeGroupId() : "-");
+            player.sendMessage(i18n.tr(player, "debug.env-line", envArgs));
 
             // /ne debug（默认）附带一行 crop 调试，行为与 /ne debug crop 相同
             handleDebugCrop(player, false);
