@@ -87,17 +87,20 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
         int blockLight = base.getLightLevel() - skyLight;
         if (blockLight < 0) blockLight = 0;
 
-        // 室内/室外估算：
-        // - 基础几何露天程度：ratio = skyLight / totalLight，用于布尔判定（是否露天）
-        // - 室外得分：在 ratio 基础上再乘以时间/天气因子，用于物理强度（昼夜、风暴等）
-        double outdoorScore;
+        // 室内/室外：结构露天度 + 物理暴露强度（Semi Outdoor 更常见）
+        // - opennessScore：仅看结构（开口比例 + 屋顶距离），尽量稳定
+        // - exposureScore：opennessScore 再叠加时间/天气，体现物理强弱
+        double exposureScore;
         if (base.getLightLevel() <= 0) {
-            outdoorScore = 0.0;
+            exposureScore = 0.0;
         } else {
-            double ratio = (double) skyLight / (double) base.getLightLevel();
-            ratio = clamp(ratio, 0.0, 1.0);
-
             World world = block.getWorld();
+
+            // 结构：开口比例 + 屋顶距离
+            StructureSample s = sampleStructure(world, block);
+            double wOpen = environmentConfigView != null ? environmentConfigView.getStructureWeightOpen() : 0.70;
+            double wRoof = environmentConfigView != null ? environmentConfigView.getStructureWeightRoof() : 0.30;
+            double opennessScore = clamp(wOpen * s.openRatio + wRoof * s.roofScore, 0.0, 1.0);
 
             // 时间因子：白天≈1.0，夜晚明显降低（只影响得分，不影响“是否露天”的几何判定）
             double timeFactor = 1.0;
@@ -122,17 +125,24 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
             } catch (Throwable ignored) {
             }
 
-            outdoorScore = clamp(ratio * timeFactor * weatherFactor, 0.0, 1.0);
-
-            // 布尔“室外”仅依据几何 ratio 与阈值，保证在夜晚/恶劣天气下仍能识别为露天
-            double threshold = environmentConfigView != null ? environmentConfigView.getOutdoorThreshold() : 0.6;
-            boolean outdoor = ratio >= threshold;
+            exposureScore = clamp(opennessScore * timeFactor * weatherFactor, 0.0, 1.0);
 
             // 海拔
             int y = block.getY();
 
-            // 温室 / 封闭空间得分
-            double greenhouseScore = computeGreenhouseScore(block, base, outdoor);
+            // 温室仍然保留（作为额外维度）
+            double greenhouseScore = computeGreenhouseScore(block, base, true);
+            boolean inGreenhouse = isInGreenhouse(greenhouseScore);
+
+            // 环境类型：基于结构 opennessScore 分段（Semi Outdoor 更常见）
+            double indoorMax = environmentConfigView != null ? environmentConfigView.getStructureIndoorMax() : 0.25;
+            double outdoorMin = environmentConfigView != null ? environmentConfigView.getStructureOutdoorMin() : 0.80;
+            EnvironmentType type = (opennessScore < indoorMax)
+                    ? EnvironmentType.INDOOR
+                    : (opennessScore >= outdoorMin ? EnvironmentType.OUTDOOR : EnvironmentType.SEMI_OUTDOOR);
+
+            // 保留旧字段 outdoor：仅在 OUTDOOR 时为 true（Semi Outdoor / Indoor 为 false）
+            boolean outdoor = type == EnvironmentType.OUTDOOR;
 
             // 群系与 biome key（groupId 暂不在此解析，仅提供原始 key）
             Biome biome = block.getBiome();
@@ -146,19 +156,22 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
                     .skyLight(skyLight)
                     .blockLight(blockLight)
                     .outdoor(outdoor)
-                    .outdoorScore(outdoorScore)
+                    .outdoorScore(exposureScore)
                     .altitudeY(y)
                     .nearWaterScore(estimateNearWaterScore(base))
                     .greenhouseScore(greenhouseScore)
-                    .inGreenhouse(isInGreenhouse(greenhouseScore))
+                    .inGreenhouse(inGreenhouse)
+                    .openRatio(s.openRatio)
+                    .roofDy(s.roofDy)
+                    .opennessScore(opennessScore)
+                    .exposureScore(exposureScore)
+                    .environmentType(type)
                     .biome(biome)
                     .biomeKey(biomeKey)
                     .biomeGroupId(null)
                     .build();
         }
         // 完全无光时视为室内且得分为 0
-        double threshold = environmentConfigView != null ? environmentConfigView.getOutdoorThreshold() : 0.6;
-        boolean outdoor = false;
         int y = block.getY();
         Biome biome = block.getBiome();
         NamespacedKey biomeKey = safeBiomeKey(biome);
@@ -169,13 +182,18 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
                 .lightLevel(base.getLightLevel())
                 .skyLight(skyLight)
                 .blockLight(blockLight)
-                .outdoor(outdoor)
+                .outdoor(false)
                 .outdoorScore(0.0)
                 .altitudeY(y)
                 .nearWaterScore(estimateNearWaterScore(base))
                  // 完全黑暗时默认不处于温室
                 .greenhouseScore(0.0)
                 .inGreenhouse(false)
+                .openRatio(0.0)
+                .roofDy(-1)
+                .opennessScore(0.0)
+                .exposureScore(0.0)
+                .environmentType(EnvironmentType.INDOOR)
                 .biome(biome)
                 .biomeKey(biomeKey)
                 .biomeGroupId(null)
@@ -215,6 +233,13 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
                 .outdoorScore(current.getOutdoorScore())
                 .altitudeY(current.getAltitudeY())
                 .nearWaterScore(current.getNearWaterScore())
+                .greenhouseScore(current.getGreenhouseScore())
+                .inGreenhouse(current.isInGreenhouse())
+                .openRatio(current.getOpenRatio())
+                .roofDy(current.getRoofDy())
+                .opennessScore(current.getOpennessScore())
+                .exposureScore(current.getExposureScore())
+                .environmentType(current.getEnvironmentType())
                 .biome(current.getBiome())
                 .biomeKey(current.getBiomeKey())
                 .biomeGroupId(current.getBiomeGroupId())
@@ -376,6 +401,52 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
     private boolean isWallBlock(Block block) {
         // 与屋顶类似的判定，用于围墙
         return isRoofBlock(block);
+    }
+
+    private record StructureSample(double openRatio, int roofDy, double roofScore) {}
+
+    private StructureSample sampleStructure(World world, Block center) {
+        int radius = environmentConfigView != null ? environmentConfigView.getStructureRadius() : 4;
+        int maxRoof = environmentConfigView != null ? environmentConfigView.getStructureMaxRoofHeight() : 6;
+
+        // roofDy / roofScore
+        int roofDy = -1;
+        double roofScore = 1.0; // no roof => fully open
+        for (int dy = 1; dy <= maxRoof; dy++) {
+            Block above = center.getRelative(0, dy, 0);
+            if (isRoofBlock(above)) {
+                roofDy = dy;
+                roofScore = 1.0 - ((double) (dy - 1) / (double) maxRoof);
+                break;
+            }
+        }
+
+        // openRatio: 8 directions, if no wall encountered in y..y+2 within radius => open
+        int[][] dirs = {
+                {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+        int open = 0;
+        int total = dirs.length;
+        int baseY = center.getY();
+        for (int[] d : dirs) {
+            boolean blocked = false;
+            for (int step = 1; step <= radius; step++) {
+                int x = center.getX() + d[0] * step;
+                int z = center.getZ() + d[1] * step;
+                Block at = world.getBlockAt(x, baseY, z);
+                for (int dy = 0; dy <= 2; dy++) {
+                    if (isWallBlock(at.getRelative(0, dy, 0))) {
+                        blocked = true;
+                        break;
+                    }
+                }
+                if (blocked) break;
+            }
+            if (!blocked) open++;
+        }
+        double openRatio = total > 0 ? (double) open / (double) total : 0.0;
+        return new StructureSample(openRatio, roofDy, roofScore);
     }
 }
 

@@ -26,6 +26,11 @@ public final class EnvironmentContext {
     private final double nearWaterScore;
     private final double greenhouseScore;
     private final boolean inGreenhouse;
+    private final double opennessScore;
+    private final double exposureScore;
+    private final double openRatio;
+    private final int roofDy;
+    private final EnvironmentType environmentType;
     private final Biome biome;
     private final NamespacedKey biomeKey;
     private final String biomeGroupId;
@@ -43,6 +48,11 @@ public final class EnvironmentContext {
         this.nearWaterScore = builder.nearWaterScore;
         this.greenhouseScore = builder.greenhouseScore;
         this.inGreenhouse = builder.inGreenhouse;
+        this.opennessScore = builder.opennessScore;
+        this.exposureScore = builder.exposureScore;
+        this.openRatio = builder.openRatio;
+        this.roofDy = builder.roofDy;
+        this.environmentType = builder.environmentType;
         this.biome = builder.biome;
         this.biomeKey = builder.biomeKey;
         this.biomeGroupId = builder.biomeGroupId;
@@ -108,6 +118,26 @@ public final class EnvironmentContext {
         return inGreenhouse;
     }
 
+    public double getOpennessScore() {
+        return opennessScore;
+    }
+
+    public double getExposureScore() {
+        return exposureScore;
+    }
+
+    public double getOpenRatio() {
+        return openRatio;
+    }
+
+    public int getRoofDy() {
+        return roofDy;
+    }
+
+    public EnvironmentType getEnvironmentType() {
+        return environmentType;
+    }
+
     public Biome getBiome() {
         return biome;
     }
@@ -141,6 +171,13 @@ public final class EnvironmentContext {
         map.put("nearWaterScore", nearWaterScore);
         map.put("greenhouseScore", greenhouseScore);
         map.put("inGreenhouse", inGreenhouse);
+        map.put("openRatio", openRatio);
+        map.put("roofDy", roofDy);
+        map.put("opennessScore", opennessScore);
+        map.put("exposureScore", exposureScore);
+        if (environmentType != null) {
+            map.put("environmentType", environmentType.name());
+        }
         if (biomeKey != null) {
             map.put("biomeKey", biomeKey.toString());
         } else if (biome != null) {
@@ -165,6 +202,11 @@ public final class EnvironmentContext {
         private double nearWaterScore = 0.0;
         private double greenhouseScore = 0.0;
         private boolean inGreenhouse = false;
+        private double opennessScore = 0.0;
+        private double exposureScore = 0.0;
+        private double openRatio = 0.0;
+        private int roofDy = -1;
+        private EnvironmentType environmentType = null;
         private Biome biome;
         private NamespacedKey biomeKey;
         private String biomeGroupId;
@@ -226,6 +268,31 @@ public final class EnvironmentContext {
 
         public Builder inGreenhouse(boolean v) {
             this.inGreenhouse = v;
+            return this;
+        }
+
+        public Builder opennessScore(double v) {
+            this.opennessScore = v;
+            return this;
+        }
+
+        public Builder exposureScore(double v) {
+            this.exposureScore = v;
+            return this;
+        }
+
+        public Builder openRatio(double v) {
+            this.openRatio = v;
+            return this;
+        }
+
+        public Builder roofDy(int v) {
+            this.roofDy = v;
+            return this;
+        }
+
+        public Builder environmentType(EnvironmentType v) {
+            this.environmentType = v;
             return this;
         }
 

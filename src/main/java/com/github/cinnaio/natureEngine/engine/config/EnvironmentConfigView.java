@@ -22,6 +22,32 @@ public final class EnvironmentConfigView {
         return Math.max(0.0, Math.min(1.0, config.getDouble("environment.indoor.outdoor-threshold", 0.6)));
     }
 
+    // 室内外结构判定（Semi Outdoor 更常见）
+
+    public int getStructureRadius() {
+        return Math.max(1, config.getInt("environment.indoor.structure.radius", 4));
+    }
+
+    public int getStructureMaxRoofHeight() {
+        return Math.max(1, config.getInt("environment.indoor.structure.max-roof-height", 6));
+    }
+
+    public double getStructureWeightOpen() {
+        return clamp01(config.getDouble("environment.indoor.structure.weight-open", 0.70));
+    }
+
+    public double getStructureWeightRoof() {
+        return clamp01(config.getDouble("environment.indoor.structure.weight-roof", 0.30));
+    }
+
+    public double getStructureIndoorMax() {
+        return clamp01(config.getDouble("environment.indoor.structure.indoor-max", 0.25));
+    }
+
+    public double getStructureOutdoorMin() {
+        return clamp01(config.getDouble("environment.indoor.structure.outdoor-min", 0.80));
+    }
+
     public boolean isNearWaterEnabled() {
         return config.getBoolean("environment.near-water.enabled", false);
     }
@@ -68,6 +94,10 @@ public final class EnvironmentConfigView {
         double g = config.getDouble("environment.greenhouse.gamma", 1.0);
         if (g <= 0.0) return 1.0;
         return g;
+    }
+
+    private static double clamp01(double v) {
+        return Math.max(0.0, Math.min(1.0, v));
     }
 }
 

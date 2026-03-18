@@ -14,6 +14,19 @@ environment:
       snow: 0.85
       storm: 0.7
 
+    # 室内外结构判定（Semi Outdoor 更常见）
+    structure:
+      # 水平扫描半径（用于统计开口比例 openRatio）
+      radius: 4
+      # 向上检查屋顶的最大高度（用于 roofDy/roofScore）
+      max-roof-height: 6
+      # opennessScore = wOpen*openRatio + wRoof*roofScore
+      weight-open: 0.70
+      weight-roof: 0.30
+      # 分段阈值（Semi Outdoor 区间更宽）
+      indoor-max: 0.25        # < this => INDOOR
+      outdoor-min: 0.80       # >= this => OUTDOOR，否则 SEMI_OUTDOOR
+
   near-water:
     # 目前 nearWaterScore 与土壤湿度保持一致，如需邻近扫描可在后续版本开启并扩展实现。
     enabled: false

@@ -296,27 +296,24 @@ public final class NeRootCommand extends Command {
             boolean envEnabled = configManager != null
                     && configManager.getEnvironmentConfig() != null
                     && configManager.getEnvironmentConfig().isEnabled();
-            double outdoorTh = configManager != null && configManager.getEnvironmentConfig() != null
-                    ? configManager.getEnvironmentConfig().getOutdoorThreshold()
-                    : 0.6;
             java.util.Map<String, String> envArgs = new java.util.HashMap<>();
             envArgs.put("env_enabled", envEnabled ? "true" : "false");
+            envArgs.put("env_type", env.getEnvironmentType() != null ? env.getEnvironmentType().name() : "UNKNOWN");
+            envArgs.put("openness", String.format("%.2f", env.getOpennessScore()));
+            envArgs.put("exposure", String.format("%.2f", env.getExposureScore()));
+            envArgs.put("open_ratio", String.format("%.2f", env.getOpenRatio()));
+            envArgs.put("roof_dy", String.valueOf(env.getRoofDy()));
             envArgs.put("temp", String.format("%.1f", env.getTemperature()));
             envArgs.put("humidity", String.format("%.2f", env.getHumidity()));
             envArgs.put("soil", String.format("%.2f", env.getSoilMoisture()));
             envArgs.put("light", String.valueOf(env.getLightLevel()));
             envArgs.put("sky_light", String.valueOf(env.getSkyLight()));
             envArgs.put("block_light", String.valueOf(env.getBlockLight()));
-            envArgs.put("outdoor", env.isOutdoor() ? "true" : "false");
-            envArgs.put("outdoor_th", String.format("%.2f", outdoorTh));
-            envArgs.put("outdoor_score", String.format("%.2f", env.getOutdoorScore()));
             envArgs.put("alt_y", String.valueOf(env.getAltitudeY()));
             envArgs.put("biome", env.getBiomeKey() != null
                     ? env.getBiomeKey().toString()
                     : (env.getBiome() != null ? env.getBiome().toString() : "unknown"));
             envArgs.put("biome_group", env.getBiomeGroupId() != null ? env.getBiomeGroupId() : "-");
-            envArgs.put("greenhouse", env.isInGreenhouse() ? "true" : "false");
-            envArgs.put("greenhouse_score", String.format("%.2f", env.getGreenhouseScore()));
             player.sendMessage(i18n.tr(player, "debug.env-line", envArgs));
 
             // /ne debug（默认）附带一行 crop 调试，行为与 /ne debug crop 相同
@@ -392,9 +389,11 @@ public final class NeRootCommand extends Command {
             ph.put("env_hum", String.format("%.2f", cropEnv.getHumidity()));
             ph.put("env_soil", String.format("%.2f", cropEnv.getSoilMoisture()));
             ph.put("env_light", String.valueOf(cropEnv.getLightLevel()));
-            ph.put("env_outdoor", cropEnv.isOutdoor() ? "true" : "false");
-            ph.put("env_greenhouse", cropEnv.isInGreenhouse() ? "true" : "false");
-            ph.put("env_greenhouse_score", String.format("%.2f", cropEnv.getGreenhouseScore()));
+            ph.put("env_type", cropEnv.getEnvironmentType() != null ? cropEnv.getEnvironmentType().name() : "UNKNOWN");
+            ph.put("openness", String.format("%.2f", cropEnv.getOpennessScore()));
+            ph.put("exposure", String.format("%.2f", cropEnv.getExposureScore()));
+            ph.put("open_ratio", String.format("%.2f", cropEnv.getOpenRatio()));
+            ph.put("roof_dy", String.valueOf(cropEnv.getRoofDy()));
             ph.put("advance_th", String.format("%.2f", advanceTh));
             ph.put("wither_th", String.format("%.2f", witherTh));
             ph.put("decision", decision);
@@ -492,9 +491,11 @@ public final class NeRootCommand extends Command {
         ph.put("env_hum", String.format("%.2f", cropEnv.getHumidity()));
         ph.put("env_soil", String.format("%.2f", cropEnv.getSoilMoisture()));
         ph.put("env_light", String.valueOf(cropEnv.getLightLevel()));
-        ph.put("env_outdoor", cropEnv.isOutdoor() ? "true" : "false");
-        ph.put("env_greenhouse", cropEnv.isInGreenhouse() ? "true" : "false");
-        ph.put("env_greenhouse_score", String.format("%.2f", cropEnv.getGreenhouseScore()));
+        ph.put("env_type", cropEnv.getEnvironmentType() != null ? cropEnv.getEnvironmentType().name() : "UNKNOWN");
+        ph.put("openness", String.format("%.2f", cropEnv.getOpennessScore()));
+        ph.put("exposure", String.format("%.2f", cropEnv.getExposureScore()));
+        ph.put("open_ratio", String.format("%.2f", cropEnv.getOpenRatio()));
+        ph.put("roof_dy", String.valueOf(cropEnv.getRoofDy()));
         ph.put("advance_th", String.format("%.2f", advanceTh));
         ph.put("wither_th", String.format("%.2f", witherTh));
         ph.put("decision", decision);
