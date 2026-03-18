@@ -296,6 +296,9 @@ public final class NeRootCommand extends Command {
             boolean envEnabled = configManager != null
                     && configManager.getEnvironmentConfig() != null
                     && configManager.getEnvironmentConfig().isEnabled();
+            double outdoorTh = configManager != null && configManager.getEnvironmentConfig() != null
+                    ? configManager.getEnvironmentConfig().getOutdoorThreshold()
+                    : 0.6;
             java.util.Map<String, String> envArgs = new java.util.HashMap<>();
             envArgs.put("env_enabled", envEnabled ? "true" : "false");
             envArgs.put("temp", String.format("%.1f", env.getTemperature()));
@@ -305,6 +308,8 @@ public final class NeRootCommand extends Command {
             envArgs.put("sky_light", String.valueOf(env.getSkyLight()));
             envArgs.put("block_light", String.valueOf(env.getBlockLight()));
             envArgs.put("outdoor", env.isOutdoor() ? "true" : "false");
+            envArgs.put("outdoor_th", String.format("%.2f", outdoorTh));
+            envArgs.put("outdoor_score", String.format("%.2f", env.getOutdoorScore()));
             envArgs.put("alt_y", String.valueOf(env.getAltitudeY()));
             envArgs.put("biome", env.getBiomeKey() != null
                     ? env.getBiomeKey().toString()

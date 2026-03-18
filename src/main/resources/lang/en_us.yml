@@ -64,7 +64,7 @@ lang:
     title: "<color:#B8C7FF>[NatureEngine Debug]"
     season-line: "<color:#A9B3C3>Season <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
     weather-line: "<color:#A9B3C3>Weather <color:#FFE2A9>{weather}"
-    env-line: "<color:#A9B3C3>Env <color:#FFE2A9>enabled={env_enabled} <color:#A9B3C3>T={temp} H={humidity} Soil={soil} Light={light} Sky={sky_light} Block={block_light} Outdoor={outdoor} AltY={alt_y} Biome={biome} Group={biome_group}"
+    env-line: "<color:#A9B3C3>Env <color:#FFE2A9>enabled={env_enabled} <color:#A9B3C3>T={temp} H={humidity} Soil={soil} Light={light} Sky={sky_light} Block={block_light} Outdoor={outdoor} Th={outdoor_th} Score={outdoor_score} AltY={alt_y} Biome={biome} Group={biome_group}"
     crop-summary: "<color:#A9B3C3>Crop <color:#FFE2A9>{block} <color:#A9B3C3>({crop_id}) Enabled <color:#FFE2A9>{crop_enabled} <color:#A9B3C3>Stage <color:#FFE2A9>{age}<color:#A9B3C3>/{max_age} <color:#A9B3C3>Decision <color:#FFE2A9>{decision} <color:#A9B3C3>Total <color:#FFE2A9>{total}"
     crop-factors: "<color:#A9B3C3>Factors <color:#FFE2A9>T={tf} H={hf} L={lf} S={sf} W={wf}"
     crop-env: "<color:#A9B3C3>Env <color:#FFE2A9>T={env_temp} H={env_hum} Soil={env_soil} Light={env_light}"
