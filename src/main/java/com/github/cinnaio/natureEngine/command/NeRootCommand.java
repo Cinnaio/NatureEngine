@@ -15,6 +15,7 @@ import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthDebugInfo;
 import com.github.cinnaio.natureEngine.core.agriculture.growth.GrowthContext;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
 import com.github.cinnaio.natureEngine.engine.config.ConfigManager;
+import com.github.cinnaio.natureEngine.engine.config.CropConfigView;
 import com.github.cinnaio.natureEngine.engine.text.I18n;
 import com.github.cinnaio.natureEngine.engine.text.Text;
 import com.github.cinnaio.natureEngine.integration.craftengine.CraftEngineTrackService;
@@ -423,11 +424,21 @@ public final class NeRootCommand extends Command {
                 player.sendMessage(i18n.tr(player, "debug.crop-params", ph));
             }
         } else {
-            if (!tryDebugCraftEngineCrop(player, verbose, i18n, cropManager, configManager, target, season, progress, weather, advanceTh, witherTh, cropsEnabled)) {
-                player.sendMessage(i18n.tr(player, "debug.crop-none", Map.of(
-                        "block", target.getType().name(),
-                        "crops_enabled", cropsEnabled ? "true" : "false"
-                )));
+            boolean handled = tryDebugCraftEngineCrop(player, verbose, i18n, cropManager, configManager, target, season, progress, weather, advanceTh, witherTh, cropsEnabled);
+            if (!handled) {
+                // 如果目标是 CraftEngine 自定义方块，但未在 crops.yml 注册，也给出明确提示（避免用户误以为“无法查看”）
+                CraftEngineState ce = CraftEngineState.tryResolve(target);
+                if (ce != null && ce.customId != null && !ce.customId.isBlank()) {
+                    player.sendMessage(i18n.tr(player, "debug.crop-ce-unregistered", Map.of(
+                            "custom_id", ce.customId,
+                            "crops_enabled", cropsEnabled ? "true" : "false"
+                    )));
+                } else {
+                    player.sendMessage(i18n.tr(player, "debug.crop-none", Map.of(
+                            "block", target.getType().name(),
+                            "crops_enabled", cropsEnabled ? "true" : "false"
+                    )));
+                }
             }
         }
         return true;
@@ -684,13 +695,30 @@ public final class NeRootCommand extends Command {
         if (target == null) target = player.getLocation().getBlock();
         Location loc = target.getLocation();
 
+        // 1) 先尝试原版作物
         var cropOpt = cropManager.getCropDataForLocation(loc);
-        if (cropOpt.isEmpty()) {
-            player.sendMessage(i18n.tr(player, "sim.crop-none", Map.of("block", target.getType().name())));
-            return true;
+        CropType crop;
+        String displayBlock;
+        if (cropOpt.isPresent()) {
+            crop = cropOpt.get();
+            displayBlock = target.getType().name();
+        } else {
+            // 2) 再尝试 CraftEngine 自定义作物
+            CropConfigView cropCfg = cm.getCropConfig();
+            CraftEngineState ce = cropCfg != null ? CraftEngineState.tryResolve(target) : null;
+            if (ce != null && ce.customId != null && !ce.customId.isBlank()) {
+                var ceTypeOpt = cropCfg.getCraftEngineType(ce.customId);
+                if (ceTypeOpt.isEmpty()) {
+                    player.sendMessage(i18n.tr(player, "sim.crop-ce-none", Map.of("custom_id", ce.customId)));
+                    return true;
+                }
+                crop = ceTypeOpt.get();
+                displayBlock = ce.customId;
+            } else {
+                player.sendMessage(i18n.tr(player, "sim.crop-none", Map.of("block", target.getType().name())));
+                return true;
+            }
         }
-
-        CropType crop = cropOpt.get();
         EnvironmentContext envNow = EnvironmentAPI.getContext(target);
         SeasonType currentSeason = SeasonAPI.getCurrentSeason(player.getWorld());
         WeatherType currentWeather = WeatherAPI.getCurrentWeather(player.getWorld());
@@ -709,7 +737,7 @@ public final class NeRootCommand extends Command {
         double witherTh = cm.getGrowthConfig().getWitherThreshold();
 
         player.sendMessage(i18n.tr(player, "sim.crop-header", Map.of(
-                "block", target.getType().name(),
+                "block", displayBlock,
                 "crop_id", crop.getId(),
                 "base_t", String.format("%.2f", baseTemp),
                 "base_h", String.format("%.2f", baseHum),

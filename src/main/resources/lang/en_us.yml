@@ -79,11 +79,13 @@ lang:
     crop-thresholds: "<color:#A9B3C3>Thresholds <color:#FFE2A9>Adv={advance_th} Wither={wither_th}"
     crop-params: "<color:#A9B3C3>Params <color:#FFE2A9>OptT={opt_temp}±{temp_tol} OptH={opt_hum}±{hum_tol} MinLight={min_light} PrefSeasons={pref_seasons} CfgStages={stages}"
     crop-none: "<color:#A9B3C3>Crop <color:#FFE2A9>{block} <color:#A9B3C3>is not controlled (crops.enabled={crops_enabled}, or not registered/disabled)"
+    crop-ce-unregistered: "<color:#A9B3C3>CraftEngine <color:#FFE2A9>{custom_id} <color:#A9B3C3>is not controlled (crops.enabled={crops_enabled}, or not registered/disabled in crops.yml:crops.craftengine)"
 
   sim:
     crop-header: "<color:#B8C7FF>[Sim] <color:#A9B3C3>{block} <color:#FFE2A9>{crop_id} <color:#A9B3C3>Base(T={base_t} H={base_h} Soil={base_soil} Light={light}) Th(A={advance_th} W={wither_th})"
     crop-legend: "<color:#A9B3C3>Legend: <color:#FFE2A9>(A)=ADVANCE (B)=BLOCK (W)=WITHER"
     crop-none: "<color:#A9B3C3>Target <color:#FFE2A9>{block} <color:#A9B3C3>is not controlled; can't simulate (register/enable in crops.yml)"
+    crop-ce-none: "<color:#A9B3C3>Target CraftEngine <color:#FFE2A9>{custom_id} <color:#A9B3C3>is not controlled; can't simulate (register/enable in crops.yml:crops.craftengine)"
 
   visual:
     only-world: "<color:#FFB4B4>This command only works in world."
