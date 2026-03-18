@@ -16,7 +16,7 @@ lang:
       help-title: "<color:#B8C7FF>[NatureEngine] <color:#A9B3C3>可用子命令："
       help-debug: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug <color:#A9B3C3>显示当前世界季节、天气、环境与作物调试"
       help-debug-crop: "<color:#A9B3C3>- <color:#FFE2A9>/ne debug crop <color:#A9B3C3>仅显示指向目标的作物生长调试"
-      help-sim-crop: "<color:#A9B3C3>- <color:#FFE2A9>/ne sim crop <color:#A9B3C3>模拟四季×天气对目标作物的计算结果（不修改方块）"
+      help-sim-crop: "<color:#A9B3C3>- <color:#FFE2A9>/ne sim crop <color:#A9B3C3>模拟四季×天气对目标作物的计算结果(不修改方块)"
       help-season-info: "<color:#A9B3C3>- <color:#FFE2A9>/ne season info <color:#A9B3C3>显示当前世界季节信息"
       help-season-next: "<color:#A9B3C3>- <color:#FFE2A9>/ne season next <color:#A9B3C3>切换到下一季节"
       help-season-set: "<color:#A9B3C3>- <color:#FFE2A9>/ne season set <spring|summer|autumn|winter> <color:#A9B3C3>设置当前世界季节"
@@ -72,18 +72,18 @@ lang:
     title: "<color:#B8C7FF>[NatureEngine Debug]"
     season-line: "<color:#A9B3C3>季节 <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
     weather-line: "<color:#A9B3C3>天气 <color:#FFE2A9>{weather}"
-    env-line: "<color:#A9B3C3>环境 <color:#FFE2A9>模块={env_enabled}\n<color:#A9B3C3>- <color:#FFE2A9>类型={env_type} <color:#A9B3C3>结构露天={openness} 物理暴露={exposure}\n<color:#A9B3C3>- <color:#FFE2A9>开口比={open_ratio} <color:#A9B3C3>屋顶dy={roof_dy}\n<color:#A9B3C3>- <color:#FFE2A9>温度={temp} <color:#A9B3C3>湿度={humidity} 土壤={soil} 光照={light} 天空光={sky_light} 方块光={block_light}\n<color:#A9B3C3>- <color:#FFE2A9>海拔Y={alt_y} <color:#A9B3C3>群系={biome} 组={biome_group}"
-    crop-summary: "<color:#A9B3C3>作物 <color:#FFE2A9>{block} <color:#A9B3C3>（{crop_id}）· 启用 <color:#FFE2A9>{crop_enabled} <color:#A9B3C3>· 阶段 <color:#FFE2A9>{age}<color:#A9B3C3>/{max_age} <color:#A9B3C3>· 判定 <color:#FFE2A9>{decision} <color:#A9B3C3>· 总值 <color:#FFE2A9>{total}"
+    env-line: "<color:#A9B3C3>环境 模块=<color:#FFE2A9>{env_enabled}\n<color:#A9B3C3>- 类型=<color:#FFE2A9>{env_type} <color:#A9B3C3>结构露天=<color:#FFE2A9>{openness} <color:#A9B3C3>物理暴露=<color:#FFE2A9>{exposure}\n<color:#A9B3C3>- 开口比=<color:#FFE2A9>{open_ratio} <color:#A9B3C3>屋顶dy=<color:#FFE2A9>{roof_dy}\n<color:#A9B3C3>- 温度=<color:#FFE2A9>{temp} <color:#A9B3C3>湿度=<color:#FFE2A9>{humidity} <color:#A9B3C3>土壤=<color:#FFE2A9>{soil} <color:#A9B3C3>光照=<color:#FFE2A9>{light} <color:#A9B3C3>天空光=<color:#FFE2A9>{sky_light} <color:#A9B3C3>方块光=<color:#FFE2A9>{block_light}\n<color:#A9B3C3>- 海拔Y=<color:#FFE2A9>{alt_y} <color:#A9B3C3>群系=<color:#FFE2A9>{biome} <color:#A9B3C3>组=<color:#FFE2A9>{biome_group}"
+    crop-summary: "<color:#A9B3C3>作物 <color:#FFE2A9>{block} <color:#A9B3C3>({crop_id})· 启用 <color:#FFE2A9>{crop_enabled} <color:#A9B3C3>· 阶段 <color:#FFE2A9>{age}<color:#A9B3C3>/{max_age} <color:#A9B3C3>· 判定 <color:#FFE2A9>{decision} <color:#A9B3C3>· 总值 <color:#FFE2A9>{total}"
     crop-factors: "<color:#A9B3C3>因子 <color:#FFE2A9>温度={tf} 湿度={hf} 光照={lf} 季节={sf} 天气={wf}"
-    crop-env: "<color:#A9B3C3>环境\n<color:#A9B3C3>- <color:#FFE2A9>类型={env_type} <color:#A9B3C3>结构露天={openness} 物理暴露={exposure}\n<color:#A9B3C3>- <color:#FFE2A9>开口比={open_ratio} <color:#A9B3C3>屋顶dy={roof_dy}\n<color:#A9B3C3>- <color:#FFE2A9>温度={env_temp} <color:#A9B3C3>湿度={env_hum} 土壤={env_soil} 光照={env_light}"
+    crop-env: "<color:#A9B3C3>环境\n<color:#A9B3C3>- 类型=<color:#FFE2A9>{env_type} <color:#A9B3C3>结构露天=<color:#FFE2A9>{openness} <color:#A9B3C3>物理暴露=<color:#FFE2A9>{exposure}\n<color:#A9B3C3>- 开口比=<color:#FFE2A9>{open_ratio} <color:#A9B3C3>屋顶dy=<color:#FFE2A9>{roof_dy}\n<color:#A9B3C3>- 温度=<color:#FFE2A9>{env_temp} <color:#A9B3C3>湿度=<color:#FFE2A9>{env_hum} <color:#A9B3C3>土壤=<color:#FFE2A9>{env_soil} <color:#A9B3C3>光照=<color:#FFE2A9>{env_light}"
     crop-thresholds: "<color:#A9B3C3>阈值 <color:#FFE2A9>推进={advance_th} 枯萎={wither_th}"
     crop-params: "<color:#A9B3C3>参数 <color:#FFE2A9>最适温={opt_temp}±{temp_tol} 最适湿={opt_hum}±{hum_tol} 最低光={min_light} 偏好季节={pref_seasons} 阶段数={stages}"
-    crop-none: "<color:#A9B3C3>作物 <color:#FFE2A9>{block} <color:#A9B3C3>未被作物系统接管（crops.enabled={crops_enabled}，或未在 crops.yml 注册/已禁用）"
+    crop-none: "<color:#A9B3C3>作物 <color:#FFE2A9>{block} <color:#A9B3C3>未被作物系统接管(crops.enabled={crops_enabled}，或未在 crops.yml 注册/已禁用)"
 
   sim:
     crop-header: "<color:#B8C7FF>[Sim] <color:#A9B3C3>{block} <color:#FFE2A9>{crop_id} <color:#A9B3C3>Base(T={base_t} H={base_h} Soil={base_soil} Light={light}) Th(A={advance_th} W={wither_th})"
     crop-legend: "<color:#A9B3C3>图例：<color:#FFE2A9>(A)=ADVANCE (B)=BLOCK (W)=WITHER"
-    crop-none: "<color:#A9B3C3>目标 <color:#FFE2A9>{block} <color:#A9B3C3>未被作物系统接管，无法模拟（请先在 crops.yml 注册并启用）"
+    crop-none: "<color:#A9B3C3>目标 <color:#FFE2A9>{block} <color:#A9B3C3>未被作物系统接管，无法模拟(请先在 crops.yml 注册并启用)"
 
   visual:
     only-world: "<color:#FFB4B4>该命令仅对 world 生效。"
