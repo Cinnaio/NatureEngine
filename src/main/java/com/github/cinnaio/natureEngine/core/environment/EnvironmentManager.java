@@ -87,23 +87,81 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
         int blockLight = base.getLightLevel() - skyLight;
         if (blockLight < 0) blockLight = 0;
 
-        // 室内/室外估算：使用天空光占比作为得分
+        // 室内/室外估算：
+        // - 基础几何露天程度：ratio = skyLight / totalLight，用于布尔判定（是否露天）
+        // - 室外得分：在 ratio 基础上再乘以时间/天气因子，用于物理强度（昼夜、风暴等）
         double outdoorScore;
         if (base.getLightLevel() <= 0) {
             outdoorScore = 0.0;
         } else {
-            outdoorScore = Math.max(0.0, Math.min(1.0, (double) skyLight / (double) base.getLightLevel()));
+            double ratio = (double) skyLight / (double) base.getLightLevel();
+            ratio = clamp(ratio, 0.0, 1.0);
+
+            World world = block.getWorld();
+
+            // 时间因子：白天≈1.0，夜晚明显降低（只影响得分，不影响“是否露天”的几何判定）
+            double timeFactor = 1.0;
+            try {
+                long t = world.getTime() % 24000L;
+                if (t >= 12000L) {
+                    // 夜晚：弱化露天效果
+                    timeFactor = 0.3;
+                }
+            } catch (Throwable ignored) {
+            }
+
+            // 天气因子：默认使用 environment.yml 中的 weather-factor 配置（同样只影响得分）
+            double weatherFactor = 1.0;
+            try {
+                WeatherType wt = weatherManager != null ? weatherManager.getCurrentWeather(world) : null;
+                if (environmentConfigView != null && wt != null) {
+                    weatherFactor = environmentConfigView.getOutdoorWeatherFactor(wt);
+                } else if (environmentConfigView != null && wt == null && world.hasStorm()) {
+                    weatherFactor = environmentConfigView.getOutdoorWeatherFactor(WeatherType.STORM);
+                }
+            } catch (Throwable ignored) {
+            }
+
+            outdoorScore = clamp(ratio * timeFactor * weatherFactor, 0.0, 1.0);
+
+            // 布尔“室外”仅依据几何 ratio 与阈值，保证在夜晚/恶劣天气下仍能识别为露天
+            double threshold = environmentConfigView != null ? environmentConfigView.getOutdoorThreshold() : 0.6;
+            boolean outdoor = ratio >= threshold;
+
+            // 海拔
+            int y = block.getY();
+
+            // 温室 / 封闭空间得分
+            double greenhouseScore = computeGreenhouseScore(block, base, outdoor);
+
+            // 群系与 biome key（groupId 暂不在此解析，仅提供原始 key）
+            Biome biome = block.getBiome();
+            NamespacedKey biomeKey = safeBiomeKey(biome);
+
+            return EnvironmentContext.builder()
+                    .temperature(base.getTemperature())
+                    .humidity(base.getHumidity())
+                    .soilMoisture(base.getSoilMoisture())
+                    .lightLevel(base.getLightLevel())
+                    .skyLight(skyLight)
+                    .blockLight(blockLight)
+                    .outdoor(outdoor)
+                    .outdoorScore(outdoorScore)
+                    .altitudeY(y)
+                    .nearWaterScore(estimateNearWaterScore(base))
+                    .greenhouseScore(greenhouseScore)
+                    .inGreenhouse(isInGreenhouse(greenhouseScore))
+                    .biome(biome)
+                    .biomeKey(biomeKey)
+                    .biomeGroupId(null)
+                    .build();
         }
+        // 完全无光时视为室内且得分为 0
         double threshold = environmentConfigView != null ? environmentConfigView.getOutdoorThreshold() : 0.6;
-        boolean outdoor = outdoorScore >= threshold;
-
-        // 海拔
+        boolean outdoor = false;
         int y = block.getY();
-
-        // 群系与 biome key（groupId 暂不在此解析，仅提供原始 key）
         Biome biome = block.getBiome();
         NamespacedKey biomeKey = safeBiomeKey(biome);
-
         return EnvironmentContext.builder()
                 .temperature(base.getTemperature())
                 .humidity(base.getHumidity())
@@ -112,9 +170,12 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
                 .skyLight(skyLight)
                 .blockLight(blockLight)
                 .outdoor(outdoor)
-                .outdoorScore(outdoorScore)
+                .outdoorScore(0.0)
                 .altitudeY(y)
                 .nearWaterScore(estimateNearWaterScore(base))
+                 // 完全黑暗时默认不处于温室
+                .greenhouseScore(0.0)
+                .inGreenhouse(false)
                 .biome(biome)
                 .biomeKey(biomeKey)
                 .biomeGroupId(null)
@@ -228,6 +289,93 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
         } catch (Throwable ignored) {
             return null;
         }
+    }
+
+    private double computeGreenhouseScore(Block center, EnvironmentContext base, boolean outdoorFlag) {
+        if (environmentConfigView == null || !environmentConfigView.isGreenhouseEnabled()) {
+            return 0.0;
+        }
+        World world = center.getWorld();
+        int radius = environmentConfigView.getGreenhouseRadius();
+        int maxRoof = environmentConfigView.getGreenhouseMaxRoofHeight();
+        double gamma = environmentConfigView.getGreenhouseGamma();
+
+        // 屋顶评分：越低的屋顶分越高；完全无屋顶则 0
+        double roofScore = 0.0;
+        for (int dy = 1; dy <= maxRoof; dy++) {
+            Block above = center.getRelative(0, dy, 0);
+            if (isRoofBlock(above)) {
+                // 线性衰减：closer roof -> higher score
+                roofScore = 1.0 - ((double) (dy - 1) / (double) maxRoof);
+                break;
+            }
+        }
+
+        // 四周墙体比例（简单 8 方向）
+        int[][] dirs = {
+                {1, 0}, {-1, 0}, {0, 1}, {0, -1},
+                {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
+        };
+        int hit = 0;
+        int total = dirs.length;
+        int baseY = center.getY();
+        for (int[] d : dirs) {
+            boolean foundWall = false;
+            for (int step = 1; step <= radius; step++) {
+                int dx = center.getX() + d[0] * step;
+                int dz = center.getZ() + d[1] * step;
+                Block candidate = world.getBlockAt(dx, baseY, dz);
+                // 在 y-1..y+2 高度带内简单检查一列
+                for (int dy = -1; dy <= 2; dy++) {
+                    Block col = candidate.getRelative(0, dy, 0);
+                    if (isWallBlock(col)) {
+                        foundWall = true;
+                        break;
+                    }
+                }
+                if (foundWall) break;
+            }
+            if (foundWall) hit++;
+        }
+        double wallRatio = total > 0 ? (double) hit / (double) total : 0.0;
+
+        double baseScore = roofScore * wallRatio;
+        if (baseScore <= 0.0) {
+            return 0.0;
+        }
+        double score = Math.pow(baseScore, gamma);
+
+        // 如果本身就不被判定为露天（outdoor=false），则可适当抬高温室分数
+        if (!outdoorFlag) {
+            score = Math.max(score, 0.4);
+        }
+
+        return clamp(score, 0.0, 1.0);
+    }
+
+    private boolean isInGreenhouse(double greenhouseScore) {
+        if (environmentConfigView == null || !environmentConfigView.isGreenhouseEnabled()) {
+            return false;
+        }
+        double th = environmentConfigView.getGreenhouseThreshold();
+        return greenhouseScore >= th;
+    }
+
+    private boolean isRoofBlock(Block block) {
+        // 简化规则：非空气且非植物方块，或是玻璃类，视为可形成屋顶
+        if (block.isEmpty()) return false;
+        String type = block.getType().name();
+        if (type.contains("GLASS")) return true;
+        // 粗略排除植被
+        if (type.contains("LEAVES") || type.contains("GRASS") || type.contains("FLOWER") || type.contains("SAPLING")) {
+            return false;
+        }
+        return block.getType().isSolid();
+    }
+
+    private boolean isWallBlock(Block block) {
+        // 与屋顶类似的判定，用于围墙
+        return isRoofBlock(block);
     }
 }
 

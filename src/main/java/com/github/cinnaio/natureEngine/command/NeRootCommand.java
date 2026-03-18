@@ -315,6 +315,8 @@ public final class NeRootCommand extends Command {
                     ? env.getBiomeKey().toString()
                     : (env.getBiome() != null ? env.getBiome().toString() : "unknown"));
             envArgs.put("biome_group", env.getBiomeGroupId() != null ? env.getBiomeGroupId() : "-");
+            envArgs.put("greenhouse", env.isInGreenhouse() ? "true" : "false");
+            envArgs.put("greenhouse_score", String.format("%.2f", env.getGreenhouseScore()));
             player.sendMessage(i18n.tr(player, "debug.env-line", envArgs));
 
             // /ne debug（默认）附带一行 crop 调试，行为与 /ne debug crop 相同
@@ -390,6 +392,9 @@ public final class NeRootCommand extends Command {
             ph.put("env_hum", String.format("%.2f", cropEnv.getHumidity()));
             ph.put("env_soil", String.format("%.2f", cropEnv.getSoilMoisture()));
             ph.put("env_light", String.valueOf(cropEnv.getLightLevel()));
+            ph.put("env_outdoor", cropEnv.isOutdoor() ? "true" : "false");
+            ph.put("env_greenhouse", cropEnv.isInGreenhouse() ? "true" : "false");
+            ph.put("env_greenhouse_score", String.format("%.2f", cropEnv.getGreenhouseScore()));
             ph.put("advance_th", String.format("%.2f", advanceTh));
             ph.put("wither_th", String.format("%.2f", witherTh));
             ph.put("decision", decision);
@@ -487,6 +492,9 @@ public final class NeRootCommand extends Command {
         ph.put("env_hum", String.format("%.2f", cropEnv.getHumidity()));
         ph.put("env_soil", String.format("%.2f", cropEnv.getSoilMoisture()));
         ph.put("env_light", String.valueOf(cropEnv.getLightLevel()));
+        ph.put("env_outdoor", cropEnv.isOutdoor() ? "true" : "false");
+        ph.put("env_greenhouse", cropEnv.isInGreenhouse() ? "true" : "false");
+        ph.put("env_greenhouse_score", String.format("%.2f", cropEnv.getGreenhouseScore()));
         ph.put("advance_th", String.format("%.2f", advanceTh));
         ph.put("wither_th", String.format("%.2f", witherTh));
         ph.put("decision", decision);

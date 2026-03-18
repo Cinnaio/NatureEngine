@@ -6,7 +6,27 @@ environment:
     # 户外判定阈值：outdoorScore >= threshold 视为室外
     outdoor-threshold: 0.6
 
+    # 按天气对室外得分的影响系数（1.0 为不变，小于 1.0 为削弱）
+    weather-factor:
+      sunny: 1.0
+      cloudy: 0.95
+      rain: 0.9
+      snow: 0.85
+      storm: 0.7
+
   near-water:
     # 目前 nearWaterScore 与土壤湿度保持一致，如需邻近扫描可在后续版本开启并扩展实现。
     enabled: false
+
+  # 温室 / 封闭空间判定参数
+  greenhouse:
+    enabled: true
+    # 水平扫描半径（以方块为单位）
+    radius: 4
+    # 向上检查屋顶的最大高度
+    max-roof-height: 6
+    # 温室判定阈值：greenhouseScore >= threshold 视为处于温室中
+    threshold: 0.6
+    # 平滑参数：>1 会让高封闭度更突出
+    gamma: 1.0
 

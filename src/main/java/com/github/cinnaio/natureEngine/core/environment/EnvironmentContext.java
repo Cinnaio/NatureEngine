@@ -24,6 +24,8 @@ public final class EnvironmentContext {
     private final double outdoorScore;
     private final int altitudeY;
     private final double nearWaterScore;
+    private final double greenhouseScore;
+    private final boolean inGreenhouse;
     private final Biome biome;
     private final NamespacedKey biomeKey;
     private final String biomeGroupId;
@@ -39,6 +41,8 @@ public final class EnvironmentContext {
         this.outdoorScore = builder.outdoorScore;
         this.altitudeY = builder.altitudeY;
         this.nearWaterScore = builder.nearWaterScore;
+        this.greenhouseScore = builder.greenhouseScore;
+        this.inGreenhouse = builder.inGreenhouse;
         this.biome = builder.biome;
         this.biomeKey = builder.biomeKey;
         this.biomeGroupId = builder.biomeGroupId;
@@ -96,6 +100,14 @@ public final class EnvironmentContext {
         return nearWaterScore;
     }
 
+    public double getGreenhouseScore() {
+        return greenhouseScore;
+    }
+
+    public boolean isInGreenhouse() {
+        return inGreenhouse;
+    }
+
     public Biome getBiome() {
         return biome;
     }
@@ -127,6 +139,8 @@ public final class EnvironmentContext {
         map.put("outdoorScore", outdoorScore);
         map.put("altitudeY", altitudeY);
         map.put("nearWaterScore", nearWaterScore);
+        map.put("greenhouseScore", greenhouseScore);
+        map.put("inGreenhouse", inGreenhouse);
         if (biomeKey != null) {
             map.put("biomeKey", biomeKey.toString());
         } else if (biome != null) {
@@ -149,6 +163,8 @@ public final class EnvironmentContext {
         private double outdoorScore = 0.0;
         private int altitudeY = -1;
         private double nearWaterScore = 0.0;
+        private double greenhouseScore = 0.0;
+        private boolean inGreenhouse = false;
         private Biome biome;
         private NamespacedKey biomeKey;
         private String biomeGroupId;
@@ -200,6 +216,16 @@ public final class EnvironmentContext {
 
         public Builder nearWaterScore(double v) {
             this.nearWaterScore = v;
+            return this;
+        }
+
+        public Builder greenhouseScore(double v) {
+            this.greenhouseScore = v;
+            return this;
+        }
+
+        public Builder inGreenhouse(boolean v) {
+            this.inGreenhouse = v;
             return this;
         }
 
