@@ -6,6 +6,7 @@ package com.github.cinnaio.natureEngine.core.environment;
 public enum EnvironmentType {
     INDOOR,
     SEMI_OUTDOOR,
+    GREENHOUSE,
     OUTDOOR
 }
 

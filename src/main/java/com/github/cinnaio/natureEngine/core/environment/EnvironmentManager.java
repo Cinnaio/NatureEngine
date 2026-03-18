@@ -130,16 +130,23 @@ public final class EnvironmentManager implements EnvironmentProvider, Environmen
             // 海拔
             int y = block.getY();
 
-            // 温室仍然保留（作为额外维度）
+            // 温室仍然保留（作为额外维度），并可提升为第四态环境类型
             double greenhouseScore = computeGreenhouseScore(block, base, true);
             boolean inGreenhouse = isInGreenhouse(greenhouseScore);
 
-            // 环境类型：基于结构 opennessScore 分段（Semi Outdoor 更常见）
+            // 环境类型：优先温室，其余基于结构 opennessScore 分段（Semi Outdoor 更常见）
             double indoorMax = environmentConfigView != null ? environmentConfigView.getStructureIndoorMax() : 0.25;
             double outdoorMin = environmentConfigView != null ? environmentConfigView.getStructureOutdoorMin() : 0.80;
-            EnvironmentType type = (opennessScore < indoorMax)
-                    ? EnvironmentType.INDOOR
-                    : (opennessScore >= outdoorMin ? EnvironmentType.OUTDOOR : EnvironmentType.SEMI_OUTDOOR);
+            EnvironmentType type;
+            if (inGreenhouse) {
+                type = EnvironmentType.GREENHOUSE;
+            } else if (opennessScore < indoorMax) {
+                type = EnvironmentType.INDOOR;
+            } else if (opennessScore >= outdoorMin) {
+                type = EnvironmentType.OUTDOOR;
+            } else {
+                type = EnvironmentType.SEMI_OUTDOOR;
+            }
 
             // 保留旧字段 outdoor：仅在 OUTDOOR 时为 true（Semi Outdoor / Indoor 为 false）
             boolean outdoor = type == EnvironmentType.OUTDOOR;

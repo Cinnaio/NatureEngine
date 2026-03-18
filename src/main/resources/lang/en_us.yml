@@ -64,6 +64,7 @@ lang:
     type:
       indoor: "Indoor"
       semi_outdoor: "Semi Outdoor"
+      greenhouse: "Greenhouse"
       outdoor: "Outdoor"
 
   debug:

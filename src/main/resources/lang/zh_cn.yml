@@ -66,6 +66,7 @@ lang:
     type:
       indoor: "室内"
       semi_outdoor: "半室外"
+      greenhouse: "温室"
       outdoor: "室外"
 
   debug:
