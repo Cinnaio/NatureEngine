@@ -62,6 +62,12 @@ lang:
       cloudy: "阴"
       snow: "雪"
 
+  environment:
+    type:
+      indoor: "室内"
+      semi_outdoor: "半室外"
+      outdoor: "室外"
+
   debug:
     title: "<color:#B8C7FF>[NatureEngine Debug]"
     season-line: "<color:#A9B3C3>季节 <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"

@@ -291,14 +291,17 @@ public final class NeRootCommand extends Command {
                     "season", seasonName,
                     "progress", String.format("%.1f", progress * 100)
             )));
-            player.sendMessage(i18n.tr(player, "debug.weather-line", Map.of("weather", weather.name())));
+            String weatherName = i18n.trRaw(player, "weather.display." + weather.name().toLowerCase(Locale.ROOT));
+            player.sendMessage(i18n.tr(player, "debug.weather-line", Map.of("weather", weatherName)));
             ConfigManager configManager = SERVICES.get(ConfigManager.class);
             boolean envEnabled = configManager != null
                     && configManager.getEnvironmentConfig() != null
                     && configManager.getEnvironmentConfig().isEnabled();
             java.util.Map<String, String> envArgs = new java.util.HashMap<>();
             envArgs.put("env_enabled", envEnabled ? "true" : "false");
-            envArgs.put("env_type", env.getEnvironmentType() != null ? env.getEnvironmentType().name() : "UNKNOWN");
+            String envTypeKey = env.getEnvironmentType() != null ? env.getEnvironmentType().name().toLowerCase(Locale.ROOT) : "unknown";
+            String envTypeName = i18n.trRaw(player, "environment.type." + envTypeKey);
+            envArgs.put("env_type", envTypeName);
             envArgs.put("openness", String.format("%.2f", env.getOpennessScore()));
             envArgs.put("exposure", String.format("%.2f", env.getExposureScore()));
             envArgs.put("open_ratio", String.format("%.2f", env.getOpenRatio()));
@@ -389,7 +392,9 @@ public final class NeRootCommand extends Command {
             ph.put("env_hum", String.format("%.2f", cropEnv.getHumidity()));
             ph.put("env_soil", String.format("%.2f", cropEnv.getSoilMoisture()));
             ph.put("env_light", String.valueOf(cropEnv.getLightLevel()));
-            ph.put("env_type", cropEnv.getEnvironmentType() != null ? cropEnv.getEnvironmentType().name() : "UNKNOWN");
+            String cropEnvTypeKey = cropEnv.getEnvironmentType() != null ? cropEnv.getEnvironmentType().name().toLowerCase(Locale.ROOT) : "unknown";
+            String cropEnvTypeName = i18n.trRaw(player, "environment.type." + cropEnvTypeKey);
+            ph.put("env_type", cropEnvTypeName);
             ph.put("openness", String.format("%.2f", cropEnv.getOpennessScore()));
             ph.put("exposure", String.format("%.2f", cropEnv.getExposureScore()));
             ph.put("open_ratio", String.format("%.2f", cropEnv.getOpenRatio()));
@@ -491,7 +496,9 @@ public final class NeRootCommand extends Command {
         ph.put("env_hum", String.format("%.2f", cropEnv.getHumidity()));
         ph.put("env_soil", String.format("%.2f", cropEnv.getSoilMoisture()));
         ph.put("env_light", String.valueOf(cropEnv.getLightLevel()));
-        ph.put("env_type", cropEnv.getEnvironmentType() != null ? cropEnv.getEnvironmentType().name() : "UNKNOWN");
+        String cropEnvTypeKey = cropEnv.getEnvironmentType() != null ? cropEnv.getEnvironmentType().name().toLowerCase(Locale.ROOT) : "unknown";
+        String cropEnvTypeName = i18n.trRaw(player, "environment.type." + cropEnvTypeKey);
+        ph.put("env_type", cropEnvTypeName);
         ph.put("openness", String.format("%.2f", cropEnv.getOpennessScore()));
         ph.put("exposure", String.format("%.2f", cropEnv.getExposureScore()));
         ph.put("open_ratio", String.format("%.2f", cropEnv.getOpenRatio()));
