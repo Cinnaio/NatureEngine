@@ -735,6 +735,11 @@ public final class NeRootCommand extends Command {
 
         double advanceTh = cm.getGrowthConfig().getAdvanceThreshold();
         double witherTh = cm.getGrowthConfig().getWitherThreshold();
+        String envTypeKey = envNow.getEnvironmentType() != null
+                ? envNow.getEnvironmentType().name().toLowerCase(Locale.ROOT)
+                : "unknown";
+        String envTypeName = i18n.trRaw(player, "environment.type." + envTypeKey);
+        boolean envAffectGrowth = cm.getGrowthConfig().isEnvironmentAffectGrowthEnabled();
 
         player.sendMessage(i18n.tr(player, "sim.crop-header", Map.of(
                 "block", displayBlock,
@@ -744,7 +749,9 @@ public final class NeRootCommand extends Command {
                 "base_soil", String.format("%.2f", baseSoil),
                 "light", String.valueOf(light),
                 "advance_th", String.format("%.2f", advanceTh),
-                "wither_th", String.format("%.2f", witherTh)
+                "wither_th", String.format("%.2f", witherTh),
+                "env_type", envTypeName,
+                "env_growth", envAffectGrowth ? "ON" : "OFF"
         )));
 
         WeatherType[] weathers = new WeatherType[]{WeatherType.SUNNY, WeatherType.RAIN, WeatherType.STORM, WeatherType.SNOW, WeatherType.CLOUDY};
@@ -757,7 +764,29 @@ public final class NeRootCommand extends Command {
                 double t = baseTemp + cm.getSeasonConfig().getTemperatureDelta(s) + wp.getTemperatureDelta();
                 double h = clamp01(baseHum + cm.getSeasonConfig().getHumidityDelta(s) + wp.getHumidityDelta());
                 double soil = clamp01(baseSoil + wp.getSoilMoistureDelta());
-                EnvironmentContext env = new EnvironmentContext(t, h, soil, light);
+
+                EnvironmentContext env = EnvironmentContext.builder()
+                        .temperature(t)
+                        .humidity(h)
+                        .soilMoisture(soil)
+                        .lightLevel(light)
+                        .skyLight(envNow.getSkyLight())
+                        .blockLight(envNow.getBlockLight())
+                        .outdoor(envNow.isOutdoor())
+                        .outdoorScore(envNow.getOutdoorScore())
+                        .altitudeY(envNow.getAltitudeY())
+                        .nearWaterScore(envNow.getNearWaterScore())
+                        .greenhouseScore(envNow.getGreenhouseScore())
+                        .inGreenhouse(envNow.isInGreenhouse())
+                        .opennessScore(envNow.getOpennessScore())
+                        .exposureScore(envNow.getExposureScore())
+                        .openRatio(envNow.getOpenRatio())
+                        .roofDy(envNow.getRoofDy())
+                        .environmentType(envNow.getEnvironmentType())
+                        .biome(envNow.getBiome())
+                        .biomeKey(envNow.getBiomeKey())
+                        .biomeGroupId(envNow.getBiomeGroupId())
+                        .build();
 
                 GrowthContext ctx = new GrowthContext(
                         loc,

@@ -84,7 +84,7 @@ lang:
     crop-ce-unregistered: "<color:#A9B3C3>CraftEngine <color:#FFE2A9>{custom_id} <color:#A9B3C3>未被作物系统接管(crops.enabled={crops_enabled}，或未在 crops.yml 的 crops.craftengine 注册/已禁用)"
 
   sim:
-    crop-header: "<color:#B8C7FF>[Sim] <color:#A9B3C3>{block} <color:#FFE2A9>{crop_id} <color:#A9B3C3>Base(T={base_t} H={base_h} Soil={base_soil} Light={light}) Th(A={advance_th} W={wither_th})"
+    crop-header: "<color:#B8C7FF>[Sim] <color:#A9B3C3>{block} <color:#FFE2A9>{crop_id} <color:#A9B3C3>Base(T={base_t} H={base_h} Soil={base_soil} Light={light}) Th(A={advance_th} W={wither_th}) Env(Type={env_type},Growth={env_growth})"
     crop-legend: "<color:#A9B3C3>图例：<color:#FFE2A9>(A)=ADVANCE (B)=BLOCK (W)=WITHER"
     crop-none: "<color:#A9B3C3>目标 <color:#FFE2A9>{block} <color:#A9B3C3>未被作物系统接管，无法模拟(请先在 crops.yml 注册并启用)"
     crop-ce-none: "<color:#A9B3C3>目标 CraftEngine <color:#FFE2A9>{custom_id} <color:#A9B3C3>未被作物系统接管，无法模拟(请先在 crops.yml 的 crops.craftengine 注册并启用)"
