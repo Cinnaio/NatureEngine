@@ -1,5 +1,6 @@
 package com.github.cinnaio.natureEngine.core.agriculture.crop;
 
+import com.github.cinnaio.natureEngine.core.agriculture.growth.CropEnvironmentPolicy;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 
 import java.util.EnumSet;
@@ -21,6 +22,7 @@ public final class CropData implements CropType {
     private final int minLight;
     private final Set<SeasonType> preferredSeasons;
     private final boolean enabled;
+    private final CropEnvironmentPolicy environmentPolicy;
 
     public CropData(
             String id,
@@ -44,6 +46,33 @@ public final class CropData implements CropType {
         this.minLight = minLight;
         this.preferredSeasons = EnumSet.copyOf(preferredSeasons);
         this.enabled = enabled;
+        this.environmentPolicy = null;
+    }
+
+    public CropData(
+            String id,
+            int stages,
+            long baseTicksPerStage,
+            double optimalTemperature,
+            double temperatureTolerance,
+            double optimalHumidity,
+            double humidityTolerance,
+            int minLight,
+            Set<SeasonType> preferredSeasons,
+            boolean enabled,
+            CropEnvironmentPolicy environmentPolicy
+    ) {
+        this.id = id;
+        this.stages = stages;
+        this.baseTicksPerStage = baseTicksPerStage;
+        this.optimalTemperature = optimalTemperature;
+        this.temperatureTolerance = temperatureTolerance;
+        this.optimalHumidity = optimalHumidity;
+        this.humidityTolerance = humidityTolerance;
+        this.minLight = minLight;
+        this.preferredSeasons = EnumSet.copyOf(preferredSeasons);
+        this.enabled = enabled;
+        this.environmentPolicy = environmentPolicy;
     }
 
     @Override
@@ -94,5 +123,10 @@ public final class CropData implements CropType {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public CropEnvironmentPolicy getEnvironmentPolicy() {
+        return environmentPolicy;
     }
 }

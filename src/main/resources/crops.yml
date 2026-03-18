@@ -25,6 +25,21 @@ crops:
       humidity-tolerance: 0.50
       min-light: 9
       preferred-seasons: [SPRING, SUMMER]
+      # 可选：作物级环境策略覆写（缺省使用 growth.yml 的全局规则）
+      # environment:
+      #   enabled: true
+      #   mitigation-strength: 0.60
+      #   stability:
+      #     greenhouse: 1.0
+      #     indoor: 0.7
+      #     semi_outdoor: 0.35
+      #     outdoor: 0.0
+      #   advance-boost:
+      #     greenhouse: 1.05
+      #     indoor: 0.95
+      #     semi_outdoor: 1.0
+      #     outdoor: 1.0
+      #   exposure-boost-range: 0.05
 
     # 胡萝卜（略快）
     CARROTS:

@@ -408,10 +408,17 @@ public final class NeRootCommand extends Command {
             ph.put("lf", String.format("%.2f", info.getLightFactor()));
             ph.put("sf", String.format("%.2f", info.getSeasonFactor()));
             ph.put("wf", String.format("%.2f", info.getWeatherFactor()));
+            ph.put("total_before", String.format("%.3f", info.getTotalBeforeEnv()));
             player.sendMessage(i18n.tr(player, "debug.crop-summary", ph));
             if (verbose) {
                 player.sendMessage(i18n.tr(player, "debug.crop-factors", ph));
                 player.sendMessage(i18n.tr(player, "debug.crop-env", ph));
+                ph.put("bad_penalty", String.format("%.2f", info.getBadEnvPenalty()));
+                ph.put("stability", String.format("%.2f", info.getStabilityFactor()));
+                ph.put("mitigation", String.format("%.2f", info.getPenaltyMitigation()));
+                ph.put("boost", String.format("%.2f", info.getEnvAdvanceBoost()));
+                ph.put("total_after", String.format("%.3f", info.getTotal()));
+                player.sendMessage(i18n.tr(player, "debug.crop-env-bonus", ph));
                 player.sendMessage(i18n.tr(player, "debug.crop-thresholds", ph));
                 player.sendMessage(i18n.tr(player, "debug.crop-params", ph));
             }
@@ -512,11 +519,18 @@ public final class NeRootCommand extends Command {
         ph.put("lf", String.format("%.2f", info.getLightFactor()));
         ph.put("sf", String.format("%.2f", info.getSeasonFactor()));
         ph.put("wf", String.format("%.2f", info.getWeatherFactor()));
+        ph.put("total_before", String.format("%.3f", info.getTotalBeforeEnv()));
 
         player.sendMessage(i18n.tr(player, "debug.crop-summary", ph));
         if (verbose) {
             player.sendMessage(i18n.tr(player, "debug.crop-factors", ph));
             player.sendMessage(i18n.tr(player, "debug.crop-env", ph));
+            ph.put("bad_penalty", String.format("%.2f", info.getBadEnvPenalty()));
+            ph.put("stability", String.format("%.2f", info.getStabilityFactor()));
+            ph.put("mitigation", String.format("%.2f", info.getPenaltyMitigation()));
+            ph.put("boost", String.format("%.2f", info.getEnvAdvanceBoost()));
+            ph.put("total_after", String.format("%.3f", info.getTotal()));
+            player.sendMessage(i18n.tr(player, "debug.crop-env-bonus", ph));
             player.sendMessage(i18n.tr(player, "debug.crop-thresholds", ph));
             player.sendMessage(i18n.tr(player, "debug.crop-params", ph));
         }

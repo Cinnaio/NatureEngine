@@ -2,7 +2,9 @@ package com.github.cinnaio.natureEngine.engine.config;
 
 import com.github.cinnaio.natureEngine.core.agriculture.crop.CropData;
 import com.github.cinnaio.natureEngine.core.agriculture.crop.CropType;
+import com.github.cinnaio.natureEngine.core.agriculture.growth.CropEnvironmentPolicy;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
+import com.github.cinnaio.natureEngine.core.environment.EnvironmentType;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -60,6 +62,7 @@ public final class CropConfigView {
                 double humTol = sec.getDouble("humidity-tolerance", 0.3);
                 int minLight = sec.getInt("min-light", 9);
                 Set<SeasonType> seasons = parseSeasons(sec.getStringList("preferred-seasons"));
+                CropEnvironmentPolicy envPolicy = parseEnvPolicy(sec.getConfigurationSection("environment"));
 
                 CropData data = new CropData(
                         id,
@@ -71,7 +74,8 @@ public final class CropConfigView {
                         humTol,
                         minLight,
                         seasons,
-                        enabled
+                        enabled,
+                        envPolicy
                 );
                 vanillaTypes.put(mat, data);
             }
@@ -92,6 +96,7 @@ public final class CropConfigView {
                 int minLight = sec.getInt("min-light", 9);
                 Set<SeasonType> seasons = parseSeasons(sec.getStringList("preferred-seasons"));
                 String ageProp = sec.getString("age-property", null);
+                CropEnvironmentPolicy envPolicy = parseEnvPolicy(sec.getConfigurationSection("environment"));
 
                 CropData data = new CropData(
                         idKey.toLowerCase(Locale.ROOT),
@@ -103,7 +108,8 @@ public final class CropConfigView {
                         humTol,
                         minLight,
                         seasons,
-                        enabled
+                        enabled,
+                        envPolicy
                 );
                 craftEngineTypes.put(idKey.toLowerCase(Locale.ROOT), data);
                 if (ageProp != null && !ageProp.isBlank()) {
@@ -155,6 +161,62 @@ public final class CropConfigView {
             set.add(SeasonType.SUMMER);
         }
         return set;
+    }
+
+    private CropEnvironmentPolicy parseEnvPolicy(ConfigurationSection sec) {
+        if (sec == null) return null;
+        CropEnvironmentPolicy.Builder b = CropEnvironmentPolicy.builder();
+        b.enabled(sec.getBoolean("enabled", true));
+        if (sec.contains("mitigation-strength")) {
+            b.mitigationStrengthOverride(sec.getDouble("mitigation-strength"));
+        }
+        if (sec.contains("exposure-boost-range")) {
+            b.exposureBoostRangeOverride(sec.getDouble("exposure-boost-range"));
+        }
+
+        ConfigurationSection st = sec.getConfigurationSection("stability");
+        if (st != null) {
+            applyTypeMap(st, b, true);
+        }
+        ConfigurationSection ab = sec.getConfigurationSection("advance-boost");
+        if (ab != null) {
+            applyTypeMap(ab, b, false);
+        }
+        return b.build();
+    }
+
+    private void applyTypeMap(ConfigurationSection sec, CropEnvironmentPolicy.Builder b, boolean stability) {
+        for (String key : sec.getKeys(false)) {
+            if (key == null) continue;
+            EnvironmentType type = parseEnvType(key);
+            if (type == null) continue;
+            Object raw = sec.get(key);
+            if (!(raw instanceof Number)) continue;
+            double v = ((Number) raw).doubleValue();
+            if (stability) {
+                b.stabilityOverride(type, v);
+            } else {
+                b.advanceBoostOverride(type, v);
+            }
+        }
+    }
+
+    private EnvironmentType parseEnvType(String key) {
+        String k = key.trim().toUpperCase(Locale.ROOT);
+        try {
+            return EnvironmentType.valueOf(k);
+        } catch (IllegalArgumentException ignored) {
+            // allow legacy keys
+        }
+        // allow lower keys used in yml
+        String kl = key.trim().toLowerCase(Locale.ROOT);
+        return switch (kl) {
+            case "indoor" -> EnvironmentType.INDOOR;
+            case "semi_outdoor", "semi-outdoor" -> EnvironmentType.SEMI_OUTDOOR;
+            case "greenhouse" -> EnvironmentType.GREENHOUSE;
+            case "outdoor" -> EnvironmentType.OUTDOOR;
+            default -> null;
+        };
     }
 }
 

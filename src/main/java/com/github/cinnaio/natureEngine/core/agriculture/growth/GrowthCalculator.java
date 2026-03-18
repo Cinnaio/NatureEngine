@@ -3,6 +3,7 @@ package com.github.cinnaio.natureEngine.core.agriculture.growth;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherType;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
+import com.github.cinnaio.natureEngine.core.environment.EnvironmentType;
 import com.github.cinnaio.natureEngine.engine.config.GrowthConfigView;
 import com.github.cinnaio.natureEngine.engine.config.WeatherConfigView;
 
@@ -43,15 +44,73 @@ public final class GrowthCalculator {
         );
         double weatherFactor = computeWeatherFactor(context.getWeatherType());
 
-        double total = temperatureFactor * humidityFactor * lightFactor * seasonFactor * weatherFactor;
+        double totalBeforeEnv = temperatureFactor * humidityFactor * lightFactor * seasonFactor * weatherFactor;
 
-        if (total <= configView.getWitherThreshold()) {
-            return new GrowthDebugInfo(temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor, total, GrowthResult.wither());
+        // 环境参与生长：推进速度微调 + 坏环境惩罚削弱
+        double totalAfterEnv = totalBeforeEnv;
+        double badEnvPenalty = 0.0;
+        double stabilityFactor = 0.0;
+        double penaltyMitigation = 1.0;
+        double envAdvanceBoost = 1.0;
+        EnvironmentType envType = env.getEnvironmentType();
+
+        if (configView != null && configView.isEnvironmentAffectGrowthEnabled()) {
+            // 1) badEnvPenalty：温湿因子越低，惩罚越大
+            double avgTH = clamp01((temperatureFactor + humidityFactor) / 2.0);
+            badEnvPenalty = 1.0 - avgTH;
+
+            // 2) stabilityFactor：可被 crops.yml 覆写，否则走全局默认
+            var policy = context.getCropType().getEnvironmentPolicy();
+            boolean policyEnabled = policy == null || policy.isEnabled();
+            if (policyEnabled && envType != null) {
+                String typeKey = envType.name().toLowerCase(java.util.Locale.ROOT);
+                Double stOverride = policy != null ? policy.getStabilityOverride(envType) : null;
+                stabilityFactor = stOverride != null ? clamp01(stOverride) : configView.getEnvironmentStability(typeKey);
+
+                double mitigationStrength = policy != null && policy.getMitigationStrengthOverride() != null
+                        ? clamp01(policy.getMitigationStrengthOverride())
+                        : configView.getEnvironmentMitigationStrength();
+
+                penaltyMitigation = 1.0 - badEnvPenalty * stabilityFactor * mitigationStrength;
+                penaltyMitigation = Math.max(0.0, Math.min(1.0, penaltyMitigation));
+                totalAfterEnv = totalAfterEnv * penaltyMitigation;
+
+                // 3) envAdvanceBoost：基础倍率 + exposureScore 插值
+                Double abOverride = policy != null ? policy.getAdvanceBoostOverride(envType) : null;
+                double baseBoost = abOverride != null ? Math.max(0.0, Math.min(2.0, abOverride)) : configView.getEnvironmentAdvanceBoost(typeKey);
+                double range = policy != null && policy.getExposureBoostRangeOverride() != null
+                        ? clamp01(policy.getExposureBoostRangeOverride())
+                        : configView.getEnvironmentExposureBoostRange();
+                // exposureScore in [0,1] -> extra in [-range, +range]
+                double extra = (clamp01(env.getExposureScore()) - 0.5) * 2.0 * range;
+                envAdvanceBoost = Math.max(0.0, Math.min(2.0, baseBoost + extra));
+                totalAfterEnv = totalAfterEnv * envAdvanceBoost;
+            }
         }
-        if (total >= configView.getAdvanceThreshold()) {
-            return new GrowthDebugInfo(temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor, total, GrowthResult.advanceOneStage(total));
+
+        if (totalAfterEnv <= configView.getWitherThreshold()) {
+            return new GrowthDebugInfo(
+                    temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor,
+                    totalBeforeEnv, totalAfterEnv, badEnvPenalty, stabilityFactor, penaltyMitigation, envAdvanceBoost, envType,
+                    GrowthResult.wither()
+            );
         }
-        return new GrowthDebugInfo(temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor, total, GrowthResult.noChange());
+        if (totalAfterEnv >= configView.getAdvanceThreshold()) {
+            return new GrowthDebugInfo(
+                    temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor,
+                    totalBeforeEnv, totalAfterEnv, badEnvPenalty, stabilityFactor, penaltyMitigation, envAdvanceBoost, envType,
+                    GrowthResult.advanceOneStage(totalAfterEnv)
+            );
+        }
+        return new GrowthDebugInfo(
+                temperatureFactor, humidityFactor, lightFactor, seasonFactor, weatherFactor,
+                totalBeforeEnv, totalAfterEnv, badEnvPenalty, stabilityFactor, penaltyMitigation, envAdvanceBoost, envType,
+                GrowthResult.noChange()
+        );
+    }
+
+    private static double clamp01(double v) {
+        return Math.max(0.0, Math.min(1.0, v));
     }
 
     private double computeTemperatureFactor(double actual, double optimal, double tolerance) {

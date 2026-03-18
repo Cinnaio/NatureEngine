@@ -1,6 +1,7 @@
 package com.github.cinnaio.natureEngine.core.agriculture.crop;
 
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
+import com.github.cinnaio.natureEngine.core.agriculture.growth.CropEnvironmentPolicy;
 
 import java.util.Set;
 
@@ -30,5 +31,12 @@ public interface CropType {
     Set<SeasonType> getPreferredSeasons();
 
     boolean isEnabled();
+
+    /**
+     * 作物级环境策略覆写（可选）。返回 null 表示使用全局默认。
+     */
+    default CropEnvironmentPolicy getEnvironmentPolicy() {
+        return null;
+    }
 }
 

@@ -9,3 +9,34 @@ growth:
   # - 默认 3 与原版默认 gamerule 一致
   random-tick-speed: 3
 
+  # ==========================================================
+  # 环境参与生长（默认开启）
+  #
+  # 说明：
+  # - 环境类型来自 environment 模块的结构判定：室内/半室外/温室/室外
+  # - stability 用于“坏环境惩罚削弱”：只有在温湿度偏离较大时才明显生效
+  # - advance-boost 用于“推进速度微调”：默认幅度很小，避免温室无条件碾压室外
+  # ==========================================================
+  environment:
+    enabled: true
+
+    # 坏环境惩罚削弱强度（0-1），越大代表温室/室内越能抵抗不适宜温湿造成的惩罚
+    mitigation-strength: 0.60
+
+    # 稳定性系数（0-1），用于削弱坏环境惩罚
+    stability:
+      greenhouse: 1.00
+      indoor: 0.70
+      semi_outdoor: 0.35
+      outdoor: 0.00
+
+    # 推进倍率：在最终 total 上乘一个小倍率（建议保持轻微）
+    advance-boost:
+      greenhouse: 1.05
+      indoor: 0.95
+      semi_outdoor: 1.00
+      outdoor: 1.00
+
+    # exposureScore（0-1）对推进倍率的额外插值幅度（默认很小）
+    exposure-boost-range: 0.05
+
