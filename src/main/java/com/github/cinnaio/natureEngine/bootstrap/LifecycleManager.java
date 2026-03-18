@@ -83,7 +83,13 @@ public final class LifecycleManager {
         this.weatherManager = new WeatherManager(plugin, globalScheduler, seasonManager, configManager.getWeatherConfig(), weatherController);
         this.weatherManager.start();
 
-        this.environmentManager = new EnvironmentManager(seasonManager, configManager.getSeasonConfig(), weatherManager, configManager.getWeatherConfig());
+        this.environmentManager = new EnvironmentManager(
+                seasonManager,
+                configManager.getSeasonConfig(),
+                weatherManager,
+                configManager.getWeatherConfig(),
+                configManager.getEnvironmentConfig()
+        );
         CropRegistry cropRegistry = new CropRegistry(configManager.getCropConfig());
         GrowthCalculator growthCalculator = new GrowthCalculator(configManager.getGrowthConfig(), configManager.getWeatherConfig());
         this.cropManager = new CropManager(cropRegistry, growthCalculator);

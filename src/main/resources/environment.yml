@@ -1,0 +1,12 @@
+environment:
+  # 是否启用扩展环境维度（室内外、光照拆分、海拔等）
+  enabled: true
+
+  indoor:
+    # 户外判定阈值：outdoorScore >= threshold 视为室外
+    outdoor-threshold: 0.6
+
+  near-water:
+    # 目前 nearWaterScore 与土壤湿度保持一致，如需邻近扫描可在后续版本开启并扩展实现。
+    enabled: false
+

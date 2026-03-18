@@ -66,7 +66,7 @@ lang:
     title: "<color:#B8C7FF>[NatureEngine Debug]"
     season-line: "<color:#A9B3C3>季节 <color:#FFE2A9>{season} <color:#A9B3C3>{progress}%"
     weather-line: "<color:#A9B3C3>天气 <color:#FFE2A9>{weather}"
-    env-line: "<color:#A9B3C3>环境 <color:#FFE2A9>T={temp} <color:#A9B3C3>H={humidity} <color:#A9B3C3>Soil={soil} <color:#A9B3C3>Light={light}"
+    env-line: "<color:#A9B3C3>环境 <color:#FFE2A9>enabled={env_enabled} <color:#A9B3C3>T={temp} H={humidity} Soil={soil} Light={light} Sky={sky_light} Block={block_light} 室外={outdoor} AltY={alt_y} Biome={biome} Group={biome_group}"
     crop-summary: "<color:#A9B3C3>作物 <color:#FFE2A9>{block} <color:#A9B3C3>（{crop_id}）· 启用 <color:#FFE2A9>{crop_enabled} <color:#A9B3C3>· 阶段 <color:#FFE2A9>{age}<color:#A9B3C3>/{max_age} <color:#A9B3C3>· 判定 <color:#FFE2A9>{decision} <color:#A9B3C3>· 总值 <color:#FFE2A9>{total}"
     crop-factors: "<color:#A9B3C3>因子 <color:#FFE2A9>温度={tf} 湿度={hf} 光照={lf} 季节={sf} 天气={wf}"
     crop-env: "<color:#A9B3C3>环境 <color:#FFE2A9>温度={env_temp} 湿度={env_hum} 土壤={env_soil} 光照={env_light}"

@@ -21,6 +21,7 @@ public final class ConfigManager {
     private VisualConfigView visualConfigView;
     private CropConfigView cropConfigView;
     private BiomeTitleConfigView biomeTitleConfigView;
+    private EnvironmentConfigView environmentConfigView;
     private ConfigLoader loader;
 
     // 模块配置文件（保持同一个对象引用，便于运行时 reload 后所有 ConfigView 自动读到新值）
@@ -31,6 +32,7 @@ public final class ConfigManager {
     private FileConfiguration visualCfg;
     private FileConfiguration cropsCfg;
     private FileConfiguration biomeTitlesCfg;
+    private FileConfiguration environmentCfg;
 
     public ConfigManager(Plugin plugin) {
         this.plugin = plugin;
@@ -48,6 +50,7 @@ public final class ConfigManager {
         this.seasonsCfg = loader.loadOrSaveDefault("seasons.yml");
         this.cropsCfg = loader.loadOrSaveDefault("crops.yml");
         this.biomeTitlesCfg = loader.loadOrSaveDefault("biome-titles.yml");
+        this.environmentCfg = loader.loadOrSaveDefault("environment.yml");
         this.seasonConfigView = new SeasonConfigView(seasonsCfg);
         this.growthConfigView = new GrowthConfigView(growthCfg);
         this.debugConfigView = new DebugConfigView(debugCfg);
@@ -55,6 +58,7 @@ public final class ConfigManager {
         this.visualConfigView = new VisualConfigView(visualCfg);
         this.cropConfigView = new CropConfigView(cropsCfg);
         this.biomeTitleConfigView = new BiomeTitleConfigView(biomeTitlesCfg);
+        this.environmentConfigView = new EnvironmentConfigView(environmentCfg);
     }
 
     public FileConfiguration getConfig() {
@@ -89,6 +93,10 @@ public final class ConfigManager {
         return biomeTitleConfigView;
     }
 
+    public EnvironmentConfigView getEnvironmentConfig() {
+        return environmentConfigView;
+    }
+
     public void reload() {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
@@ -110,12 +118,14 @@ public final class ConfigManager {
                 reloadYaml(visualCfg, "visual.yml");
                 reloadYaml(cropsCfg, "crops.yml");
                 reloadYaml(biomeTitlesCfg, "biome-titles.yml");
+                reloadYaml(environmentCfg, "environment.yml");
                 if (cropConfigView != null) {
                     cropConfigView.reload();
                 }
                 if (biomeTitleConfigView != null) {
                     biomeTitleConfigView.reload();
                 }
+                // environment 视图无需拥有 reload 方法，直接读最新 FileConfiguration 即可
                 // 主配置（config.yml 之外的 plugin.yml 主配置）也一并刷新
                 reload();
             }
@@ -136,6 +146,7 @@ public final class ConfigManager {
                     biomeTitleConfigView.reload();
                 }
             }
+            case "environment", "env" -> reloadYaml(environmentCfg, "environment.yml");
             default -> {
                 // ignore unknown
             }
