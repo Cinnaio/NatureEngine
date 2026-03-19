@@ -137,14 +137,19 @@ public final class NeRootCommand extends Command {
                 if (args.length == 2) {
                     return filterPrefix(List.of(
                             "all",
+                            "season",
                             "seasons",
                             "growth",
                             "debug",
+                            "config",
                             "weather",
                             "visual",
+                            "crop",
                             "crops",
                             "environment",
+                            "env",
                             "biome"
+                            , "biomes"
                     ), lower(args[1]));
                 }
             }
@@ -884,6 +889,19 @@ public final class NeRootCommand extends Command {
             return true;
         }
         String module = (args.length >= 1) ? args[0] : "all";
+        String m = module == null ? "" : module.trim().toLowerCase(Locale.ROOT);
+        boolean valid = switch (m) {
+            case "all",
+                 "season", "seasons",
+                 "growth",
+                 "debug", "config",
+                 "weather",
+                 "visual",
+                 "crop", "crops",
+                 "biome", "biomes",
+                 "environment", "env" -> true;
+            default -> false;
+        };
         ConfigManager cm = SERVICES.get(ConfigManager.class);
         if (cm == null) {
             if (sender instanceof Player p) {
@@ -894,6 +912,21 @@ public final class NeRootCommand extends Command {
                 }
             }
             sender.sendMessage(Text.parse("<color:#FFB4B4>配置系统未初始化。</>"));
+            return true;
+        }
+        if (!valid) {
+            if (sender instanceof Player p) {
+                I18n i18n = SERVICES.get(I18n.class);
+                if (i18n != null) {
+                    sender.sendMessage(i18n.tr(p, "command.ne.reload-invalid", Map.of(
+                            "module", String.valueOf(module),
+                            "modules", "all, seasons, growth, config, weather, visual, crops, biome, environment"
+                    )));
+                    return true;
+                }
+            }
+            sender.sendMessage(Text.parse("<color:#FFB4B4>未知模块：</> <color:#FFE2A9>" + module
+                    + "</> <color:#A9B3C3>可用：all, seasons, growth, config, weather, visual, crops, biome, environment</>"));
             return true;
         }
         cm.reloadModule(module);
@@ -909,7 +942,6 @@ public final class NeRootCommand extends Command {
         }
 
         // 重载后即时应用
-        String m = module.toLowerCase(Locale.ROOT);
         if ("all".equals(m) || "visual".equals(m)) {
             PacketSeasonVisualizer visualizer = SERVICES.get(PacketSeasonVisualizer.class);
             if (visualizer != null) {
