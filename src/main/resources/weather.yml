@@ -41,6 +41,25 @@ weather:
       STORM: 2
       SNOW: 10
 
+  # 节气 → 天气权重乘子（叠加到 season-weights 上）。
+  # - 只影响“抽选下一天气”的概率，不直接改 profiles（温湿度/生长倍率仍由 profiles 控制）
+  # - 未配置的节气/天气默认乘子为 1.0
+  # - 乘子为 0 表示该节气内该天气不会被抽到
+  #
+  # key 为 24 节气名的小写（对应 SolarTerm#key）：
+  # lichun yushui jingzhe chunfen qingming guyu
+  # lixia xiaoman mangzhong xiazhi xiaoshu dashu
+  # liqiu chushu bailu qiufen hanlu shuangjiang
+  # lidong xiaoxue daxue dongzhi xiaohan dahan
+  solar-term-weight-multipliers:
+    # 清明：清明时节雨纷纷
+    qingming:
+      RAIN: 1.30
+    # 谷雨：雨生百谷
+    guyu:
+      RAIN: 1.50
+      STORM: 1.10
+
   # 各天气对 Environment 的影响：温度/湿度/土壤湿度偏移，及生长倍率。
   # 用于 EnvironmentManager 计算作物生长、枯萎等。
   profiles:

@@ -59,7 +59,10 @@ public final class WeatherManager {
 
     private void tick() {
         for (World world : Bukkit.getWorlds()) {
-            WeatherType next = controller.chooseNextWeather(seasonManager.getCurrentSeason(world));
+            WeatherType next = controller.chooseNextWeather(
+                    seasonManager.getCurrentSeason(world),
+                    seasonManager.getCurrentSolarTerm(world)
+            );
             int durationTicks = configView.getDurationSeconds(next) * 20;
             setWeather(world, next, durationTicks);
         }

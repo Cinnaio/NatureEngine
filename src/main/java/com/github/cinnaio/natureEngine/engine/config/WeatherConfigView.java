@@ -1,6 +1,7 @@
 package com.github.cinnaio.natureEngine.engine.config;
 
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
+import com.github.cinnaio.natureEngine.core.agriculture.season.SolarTerm;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherProfile;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherType;
 import org.bukkit.configuration.ConfigurationSection;
@@ -33,6 +34,27 @@ public final class WeatherConfigView {
             weights.put(t, Math.max(0, w));
         }
         return weights;
+    }
+
+    /**
+     * 节气权重乘子：用于叠加到季节权重上（默认 1.0）。
+     * 读取路径：weather.solar-term-weight-multipliers.<termKey>.<WEATHER>
+     */
+    public Map<WeatherType, Double> getWeightMultipliersForSolarTerm(SolarTerm term) {
+        Map<WeatherType, Double> mult = new EnumMap<>(WeatherType.class);
+        if (term == null) {
+            for (WeatherType t : WeatherType.values()) mult.put(t, 1.0);
+            return mult;
+        }
+        String base = "weather.solar-term-weight-multipliers." + term.key();
+        ConfigurationSection section = config.getConfigurationSection(base);
+        for (WeatherType t : WeatherType.values()) {
+            double v = section != null ? section.getDouble(t.name(), 1.0) : 1.0;
+            if (Double.isNaN(v) || Double.isInfinite(v)) v = 1.0;
+            if (v < 0.0) v = 0.0;
+            mult.put(t, v);
+        }
+        return mult;
     }
 
     public WeatherProfile getProfile(WeatherType type) {

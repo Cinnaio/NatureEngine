@@ -2,6 +2,7 @@ package com.github.cinnaio.natureEngine.api;
 
 import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonManager;
+import com.github.cinnaio.natureEngine.core.agriculture.season.SolarTerm;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
 import org.bukkit.World;
 
@@ -42,6 +43,18 @@ public final class SeasonAPI {
 
     public static long getDaysUntilNextSeason(World world) {
         return SERVICES.get(SeasonManager.class).getDaysUntilNextSeason(world);
+    }
+
+    public static SolarTerm getCurrentSolarTerm(World world) {
+        return SERVICES.get(SeasonManager.class).getCurrentSolarTerm(world);
+    }
+
+    public static double getSolarTermProgress(World world) {
+        return SERVICES.get(SeasonManager.class).getSolarTermProgress(world);
+    }
+
+    public static long getDaysUntilNextSolarTerm(World world) {
+        return SERVICES.get(SeasonManager.class).getDaysUntilNextSolarTerm(world);
     }
 }
 
