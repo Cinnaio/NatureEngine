@@ -52,6 +52,16 @@ weather:
   # liqiu chushu bailu qiufen hanlu shuangjiang
   # lidong xiaoxue daxue dongzhi xiaohan dahan
   solar-term-weight-multipliers:
+    # 春：回暖、降水逐步增多
+    lichun:
+      RAIN: 1.05
+    yushui:
+      RAIN: 1.25
+    jingzhe:
+      RAIN: 1.20
+      STORM: 1.05
+    chunfen:
+      RAIN: 1.10
     # 清明：清明时节雨纷纷
     qingming:
       RAIN: 1.30
@@ -59,6 +69,68 @@ weather:
     guyu:
       RAIN: 1.50
       STORM: 1.10
+
+    # 夏：对流增强，雷雨更常见（不大幅改晴天权重，避免“永远下雨”）
+    lixia:
+      RAIN: 1.10
+      STORM: 1.05
+    xiaoman:
+      RAIN: 1.15
+    mangzhong:
+      RAIN: 1.25
+      STORM: 1.10
+    xiazhi:
+      STORM: 1.15
+      SUNNY: 0.95
+    xiaoshu:
+      STORM: 1.25
+      SUNNY: 0.95
+    dashu:
+      STORM: 1.35
+      RAIN: 1.10
+      SUNNY: 0.90
+
+    # 秋：总体转干转凉，雨势趋缓
+    liqiu:
+      SUNNY: 1.10
+      RAIN: 0.95
+    chushu:
+      SUNNY: 1.10
+      STORM: 0.90
+    bailu:
+      SUNNY: 1.15
+      RAIN: 0.90
+    qiufen:
+      RAIN: 1.05
+      SUNNY: 0.98
+    hanlu:
+      RAIN: 0.95
+      SUNNY: 1.05
+    shuangjiang:
+      RAIN: 0.90
+      SUNNY: 1.10
+
+    # 冬：降温明显，降水更偏向雪；雨降低
+    lidong:
+      SNOW: 1.10
+      RAIN: 0.90
+    xiaoxue:
+      SNOW: 1.20
+      RAIN: 0.80
+    daxue:
+      SNOW: 1.35
+      RAIN: 0.70
+    dongzhi:
+      SNOW: 1.30
+      SUNNY: 0.95
+    xiaohan:
+      SNOW: 1.40
+      STORM: 0.90
+      RAIN: 0.70
+    dahan:
+      SNOW: 1.45
+      STORM: 0.90
+      RAIN: 0.65
 
   # 各天气对 Environment 的影响：温度/湿度/土壤湿度偏移，及生长倍率。
   # 用于 EnvironmentManager 计算作物生长、枯萎等。
