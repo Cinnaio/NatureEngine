@@ -142,6 +142,7 @@ public final class NeRootCommand extends Command {
                             "growth",
                             "debug",
                             "config",
+                            "lang",
                             "weather",
                             "visual",
                             "crop",
@@ -903,6 +904,7 @@ public final class NeRootCommand extends Command {
                  "season", "seasons",
                  "growth",
                  "debug", "config",
+                 "lang",
                  "weather",
                  "visual",
                  "crop", "crops",
@@ -928,16 +930,23 @@ public final class NeRootCommand extends Command {
                 if (i18n != null) {
                     sender.sendMessage(i18n.tr(p, "command.ne.reload-invalid", Map.of(
                             "module", String.valueOf(module),
-                            "modules", "all, seasons, growth, config, weather, visual, crops, biome, environment"
+                            "modules", "all, seasons, growth, config, lang, weather, visual, crops, biome, environment"
                     )));
                     return true;
                 }
             }
             sender.sendMessage(Text.parse("<color:#FFB4B4>未知模块：</> <color:#FFE2A9>" + module
-                    + "</> <color:#A9B3C3>可用：all, seasons, growth, config, weather, visual, crops, biome, environment</>"));
+                    + "</> <color:#A9B3C3>可用：all, seasons, growth, config, lang, weather, visual, crops, biome, environment</>"));
             return true;
         }
-        cm.reloadModule(module);
+        if ("lang".equals(m)) {
+            I18n i18n = SERVICES.get(I18n.class);
+            if (i18n != null) {
+                i18n.load();
+            }
+        } else {
+            cm.reloadModule(module);
+        }
         if (sender instanceof Player p) {
             I18n i18n = SERVICES.get(I18n.class);
             if (i18n != null) {
