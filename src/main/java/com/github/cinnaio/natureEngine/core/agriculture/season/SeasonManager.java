@@ -117,6 +117,30 @@ public final class SeasonManager implements SeasonCycle.SeasonSettingsProvider {
         return base.getFullTime() / TICKS_PER_DAY;
     }
 
+    /** 一年总天数（四季 length-days 之和）。 */
+    public long getYearLengthDays() {
+        long spring = Math.max(0L, configView.getSettings(SeasonType.SPRING).getLengthInDays());
+        long summer = Math.max(0L, configView.getSettings(SeasonType.SUMMER).getLengthInDays());
+        long autumn = Math.max(0L, configView.getSettings(SeasonType.AUTUMN).getLengthInDays());
+        long winter = Math.max(0L, configView.getSettings(SeasonType.WINTER).getLengthInDays());
+        long sum = spring + summer + autumn + winter;
+        return Math.max(1L, sum);
+    }
+
+    /** 第几年（从 1 开始）。 */
+    public long getYear(World world) {
+        long day = getWorldDay(world);
+        long yearLen = getYearLengthDays();
+        return (day / yearLen) + 1L;
+    }
+
+    /** 年内第几天（从 1 开始）。 */
+    public long getDayInYear(World world) {
+        long day = getWorldDay(world);
+        long yearLen = getYearLengthDays();
+        return (day % yearLen) + 1L;
+    }
+
     public void setSeasonOverride(World world, SeasonType type) {
         World base = resolveBaseWorld(world);
         overrides.put(base.getUID(), type);

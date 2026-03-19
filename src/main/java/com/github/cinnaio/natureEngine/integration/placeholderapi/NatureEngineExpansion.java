@@ -5,6 +5,7 @@ import com.github.cinnaio.natureEngine.api.SeasonAPI;
 import com.github.cinnaio.natureEngine.api.WeatherAPI;
 import com.github.cinnaio.natureEngine.bootstrap.ServiceLocator;
 import com.github.cinnaio.natureEngine.core.agriculture.season.SeasonType;
+import com.github.cinnaio.natureEngine.core.agriculture.season.SolarTerm;
 import com.github.cinnaio.natureEngine.core.agriculture.weather.WeatherType;
 import com.github.cinnaio.natureEngine.core.environment.EnvironmentContext;
 import com.github.cinnaio.natureEngine.engine.text.I18n;
@@ -80,7 +81,10 @@ public final class NatureEngineExpansion extends PlaceholderExpansion {
         return switch (params.toLowerCase(Locale.ROOT)) {
             case "season", "season_display", "weather", "weather_display",
                  "season_progress", "season_duration", "days_until_next_season",
-                 "next_season", "next_season_display", "temperature", "humidity", "soil_moisture", "light" -> "";
+                 "next_season", "next_season_display",
+                 "solar_term", "solar_term_display", "solar_term_progress", "days_until_next_solar_term",
+                 "world_day", "year", "day_in_year", "year_length",
+                 "temperature", "humidity", "soil_moisture", "light" -> "";
             default -> null;
         };
     }
@@ -101,6 +105,20 @@ public final class NatureEngineExpansion extends PlaceholderExpansion {
             case "days_until_next_season" -> String.valueOf(SeasonAPI.getDaysUntilNextSeason(world));
             case "next_season" -> SeasonAPI.getNextSeasonType(world).name();
             case "next_season_display" -> i18n.trRaw(localeCode, "season.display." + SeasonAPI.getNextSeasonType(world).name().toLowerCase(Locale.ROOT));
+            case "solar_term" -> {
+                SolarTerm t = SeasonAPI.getCurrentSolarTerm(world);
+                yield t != null ? t.name() : "";
+            }
+            case "solar_term_display" -> {
+                SolarTerm t = SeasonAPI.getCurrentSolarTerm(world);
+                yield t != null ? i18n.trRaw(localeCode, "solar-term." + t.key()) : "";
+            }
+            case "solar_term_progress" -> String.format("%.1f", SeasonAPI.getSolarTermProgress(world) * 100);
+            case "days_until_next_solar_term" -> String.valueOf(SeasonAPI.getDaysUntilNextSolarTerm(world));
+            case "world_day" -> String.valueOf(SeasonAPI.getWorldDay(world) + 1L);
+            case "year" -> String.valueOf(SeasonAPI.getYear(world));
+            case "day_in_year" -> String.valueOf(SeasonAPI.getDayInYear(world));
+            case "year_length" -> String.valueOf(SeasonAPI.getYearLengthDays());
             case "temperature" -> {
                 EnvironmentContext ctx = EnvironmentAPI.getContext(player.getLocation().getBlock());
                 yield String.format("%.1f", ctx.getTemperature());
@@ -141,6 +159,20 @@ public final class NatureEngineExpansion extends PlaceholderExpansion {
                 SeasonType next = SeasonAPI.getNextSeasonType(world);
                 yield next.name().charAt(0) + next.name().substring(1).toLowerCase(Locale.ROOT);
             }
+            case "solar_term" -> {
+                SolarTerm t = SeasonAPI.getCurrentSolarTerm(world);
+                yield t != null ? t.name() : "";
+            }
+            case "solar_term_display" -> {
+                SolarTerm t = SeasonAPI.getCurrentSolarTerm(world);
+                yield t != null ? t.key() : "";
+            }
+            case "solar_term_progress" -> String.format("%.1f", SeasonAPI.getSolarTermProgress(world) * 100);
+            case "days_until_next_solar_term" -> String.valueOf(SeasonAPI.getDaysUntilNextSolarTerm(world));
+            case "world_day" -> String.valueOf(SeasonAPI.getWorldDay(world) + 1L);
+            case "year" -> String.valueOf(SeasonAPI.getYear(world));
+            case "day_in_year" -> String.valueOf(SeasonAPI.getDayInYear(world));
+            case "year_length" -> String.valueOf(SeasonAPI.getYearLengthDays());
             case "temperature" -> {
                 EnvironmentContext ctx = EnvironmentAPI.getContext(player.getLocation().getBlock());
                 yield String.format("%.1f", ctx.getTemperature());

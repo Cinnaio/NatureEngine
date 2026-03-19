@@ -2,7 +2,7 @@ biome-titles:
   enabled: true
 
   # 冷却（tick）。在 Biome 边界抖动时，避免反复弹出 Title
-  cooldown-ticks: 200
+  cooldown-ticks: 600
 
   # 指定生效世界（为空则所有世界）
   worlds: ["world"]
