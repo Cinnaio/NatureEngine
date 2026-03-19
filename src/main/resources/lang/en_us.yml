@@ -41,6 +41,8 @@ lang:
     notify-chat-line1: "<color:#A9B3C3>Season changed to <color:#FFE2A9>{season}"
     notify-chat-line2: "<color:#A9B3C3>Lasts <color:#FFE2A9>{duration} <color:#A9B3C3>days, <color:#FFE2A9>{next_season} <color:#A9B3C3>in <color:#FFE2A9>{days_left} <color:#A9B3C3>days"
     notify-chat-features: "<color:#A9B3C3>Traits: <color:#FFE2A9>{features}"
+    notify-title: "<color:#B8C7FF>Season changed"
+    notify-subtitle: "<color:#A9B3C3>{season} <color:#A9B3C3>· <color:#FFE2A9>{days_left} <color:#A9B3C3>days left"
     features-growth: "Growth x{growth}"
     features-yield: "Yield x{yield}"
     features-wither: "Easy wither"

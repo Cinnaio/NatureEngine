@@ -2,9 +2,15 @@ seasons:
   # 季节提示（手动切季节 /ne season next|set|clear 时触发）
   notify:
     enabled: true
-    # mode: actionbar | chat | both
+    # mode:
+    # - actionbar | chat | both | title
     # 仅控制“提示走哪里显示”，内容已迁移到 lang/*.yml
     mode: actionbar
+    # Title（屏幕中央大标题）动画时长：仅当 mode=title 时生效
+    title:
+      fade-in-ticks: 10
+      stay-ticks: 50
+      fade-out-ticks: 20
 
   spring:
     length-days: 10

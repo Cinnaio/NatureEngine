@@ -43,6 +43,8 @@ lang:
     notify-chat-line1: "<color:#A9B3C3>季节已切换为 <color:#FFE2A9>{season}"
     notify-chat-line2: "<color:#A9B3C3>持续 <color:#FFE2A9>{duration} <color:#A9B3C3>天，下一季节 <color:#FFE2A9>{next_season} <color:#A9B3C3>将在 <color:#FFE2A9>{days_left} <color:#A9B3C3>天后到来"
     notify-chat-features: "<color:#A9B3C3>特性：<color:#FFE2A9>{features}"
+    notify-title: "<color:#B8C7FF>季节变更"
+    notify-subtitle: "<color:#A9B3C3>{season} <color:#A9B3C3>· 剩余 <color:#FFE2A9>{days_left} <color:#A9B3C3>天"
     features-growth: "生长 x{growth}"
     features-yield: "产量 x{yield}"
     features-wither: "易枯萎"

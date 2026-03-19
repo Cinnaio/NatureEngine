@@ -50,5 +50,17 @@ public final class SeasonConfigView {
     public String getNotifyMessageTemplate() {
         return config.getString("seasons.notify.message", "&a季节已切换为 &e{season}");
     }
+
+    public int getNotifyTitleFadeInTicks() {
+        return Math.max(0, config.getInt("seasons.notify.title.fade-in-ticks", 10));
+    }
+
+    public int getNotifyTitleStayTicks() {
+        return Math.max(0, config.getInt("seasons.notify.title.stay-ticks", 50));
+    }
+
+    public int getNotifyTitleFadeOutTicks() {
+        return Math.max(0, config.getInt("seasons.notify.title.fade-out-ticks", 20));
+    }
 }
 
