@@ -61,5 +61,20 @@ public final class SeasonAPI {
     public static long getWorldDay(World world) {
         return SERVICES.get(SeasonManager.class).getWorldDay(world);
     }
+
+    /** 一年总天数（四季 length-days 之和）。 */
+    public static long getYearLengthDays() {
+        return SERVICES.get(SeasonManager.class).getYearLengthDays();
+    }
+
+    /** 第几年（从 1 开始）。 */
+    public static long getYear(World world) {
+        return SERVICES.get(SeasonManager.class).getYear(world);
+    }
+
+    /** 年内第几天（从 1 开始）。 */
+    public static long getDayInYear(World world) {
+        return SERVICES.get(SeasonManager.class).getDayInYear(world);
+    }
 }
 
