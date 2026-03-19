@@ -284,6 +284,8 @@ public final class NeRootCommand extends Command {
         var solarTerm = SeasonAPI.getCurrentSolarTerm(world);
         double solarProgress = SeasonAPI.getSolarTermProgress(world);
         long solarDays = SeasonAPI.getDaysUntilNextSolarTerm(world);
+        long seasonDays = SeasonAPI.getDaysUntilNextSeason(world);
+        long worldDay = SeasonAPI.getWorldDay(world) + 1L;
         var weather = WeatherAPI.getCurrentWeather(world);
         EnvironmentContext env = EnvironmentAPI.getContext(player.getLocation().getBlock());
 
@@ -300,6 +302,10 @@ public final class NeRootCommand extends Command {
                     "term", termName,
                     "progress", String.format("%.1f", solarProgress * 100),
                     "days", String.valueOf(solarDays)
+            )));
+            player.sendMessage(i18n.tr(player, "debug.day-line", Map.of(
+                    "day", String.valueOf(worldDay),
+                    "season_days", String.valueOf(seasonDays)
             )));
             String weatherName = i18n.trRaw(player, "weather.display." + weather.name().toLowerCase(Locale.ROOT));
             player.sendMessage(i18n.tr(player, "debug.weather-line", Map.of("weather", weatherName)));
