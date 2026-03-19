@@ -56,5 +56,10 @@ public final class SeasonAPI {
     public static long getDaysUntilNextSolarTerm(World world) {
         return SERVICES.get(SeasonManager.class).getDaysUntilNextSolarTerm(world);
     }
+
+    /** 基于“时间基准世界”的第几天（从 0 开始）。 */
+    public static long getWorldDay(World world) {
+        return SERVICES.get(SeasonManager.class).getWorldDay(world);
+    }
 }
 

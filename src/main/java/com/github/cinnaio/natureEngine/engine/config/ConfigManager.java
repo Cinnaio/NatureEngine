@@ -17,6 +17,7 @@ public final class ConfigManager {
     private SeasonConfigView seasonConfigView;
     private GrowthConfigView growthConfigView;
     private DebugConfigView debugConfigView;
+    private TimeConfigView timeConfigView;
     private WeatherConfigView weatherConfigView;
     private VisualConfigView visualConfigView;
     private CropConfigView cropConfigView;
@@ -54,6 +55,7 @@ public final class ConfigManager {
         this.seasonConfigView = new SeasonConfigView(seasonsCfg);
         this.growthConfigView = new GrowthConfigView(growthCfg);
         this.debugConfigView = new DebugConfigView(debugCfg);
+        this.timeConfigView = new TimeConfigView(debugCfg);
         this.weatherConfigView = new WeatherConfigView(weatherCfg);
         this.visualConfigView = new VisualConfigView(visualCfg);
         this.cropConfigView = new CropConfigView(cropsCfg);
@@ -75,6 +77,10 @@ public final class ConfigManager {
 
     public DebugConfigView getDebugConfig() {
         return debugConfigView;
+    }
+
+    public TimeConfigView getTimeConfig() {
+        return timeConfigView;
     }
 
     public WeatherConfigView getWeatherConfig() {

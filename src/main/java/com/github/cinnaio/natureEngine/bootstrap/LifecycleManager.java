@@ -75,7 +75,7 @@ public final class LifecycleManager {
         serviceLocator.register(GlobalScheduler.class, globalScheduler);
 
         // 核心农业环境相关服务
-        this.seasonManager = new SeasonManager(configManager.getSeasonConfig());
+        this.seasonManager = new SeasonManager(configManager.getSeasonConfig(), configManager.getTimeConfig());
         serviceLocator.register(SeasonNotifier.class, new SeasonNotifier(seasonManager, configManager.getSeasonConfig(), i18n));
         // 强制依赖 ProtocolLib（发包视觉层）
         this.protocolLibHook = new ProtocolLibHook(plugin);
