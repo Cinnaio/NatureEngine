@@ -1,14 +1,16 @@
 visual:
   enabled: true
   debug: false
-  radius-chunks: 12
+  radius-chunks: 6
   max-columns-per-tick: 600
   # 玩家走到哪视觉跟到哪：定时检测移动并刷新周围区块
   auto-follow: true
+  # 自动跟随的检测间隔（tick）
   auto-follow-interval-ticks: 40
-  auto-follow-min-move-chunks: 1
+  # 触发再次入队刷新的最小移动量（区块数）
+  auto-follow-min-move-chunks: 2
   # 每 tick 每玩家处理 chunk 数，越大 ne season next 后更新越快
-  chunks-per-tick-per-player: 10
+  chunks-per-tick-per-player: 5
 
   # Terralith 风格季节预设（参考 AdvancedSeasons 的“按地形类型分组”思路）
   # 说明：
